@@ -8,29 +8,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cebu Technological University | Student Enrollment System</title>
-
     <link rel="stylesheet" href="@Url.Content("~/Scripts/bootstrap.min.css")" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <style>
-        :root {
-            --button-blue: #007bff;
-            --button-blue-hover: #0056b3;
-            --button-purple: #6f42c5;
-            --button-purple-hover: #5b36a8;
-            --light-grey: #f8f9fa;
-            --text-dark: #343a40;
-            --text-light: #6c757d;
-        }
-
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             min-height: 100vh;
             display: flex;
-            background-color: var(--light-grey);
+            background-color: #f8f9fa;
             overflow: hidden;
         }
 
@@ -39,9 +29,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 40px;
+            padding: 60px;
             background-color: #ffffff;
-            box-shadow: 20px 0 50px -15px rgba(0, 0, 0, 0.15);
+            box-shadow: 20px 0 50px -15px rgba(0, 0, 0, 0.1);
             z-index: 1;
             animation: slideInLeft 1s ease-out forwards;
             opacity: 0;
@@ -50,32 +40,50 @@
         }
 
         .content-wrapper {
-            max-width: 500px;
+            max-width: 550px;
             padding: 20px;
         }
 
         .content-section h1 {
             font-size: 3rem;
-            color: var(--button-blue-hover);
-            margin-bottom: 5px;
+            color: #0056b3; /* Darker blue */
+            margin-bottom: 10px;
             font-weight: 700;
             line-height: 1.2;
             letter-spacing: -1px;
         }
 
+        .university-logo {
+            width: 80px;
+            margin-bottom: 20px;
+        }
+
         .system-subtitle {
             font-size: 1.5rem;
-            color: var(--text-dark);
+            color: #343a40;
             margin-bottom: 25px;
             font-weight: 500;
             line-height: 1.4;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .system-subtitle::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: #007bff;
+            border-radius: 3px;
         }
 
         .content-section p {
-            font-size: 1.05rem;
+            font-size: 1.1rem;
             line-height: 1.7;
-            margin-bottom: 30px;
-            color: var(--text-light);
+            margin-bottom: 35px;
+            color: #6c757d;
         }
 
         .btn-group-main {
@@ -87,36 +95,38 @@
 
         .btn-custom {
             font-size: 1rem;
-            padding: 12px 30px;
+            padding: 14px 35px;
             border-radius: 8px;
-            text-transform: uppercase;
             font-weight: 600;
             transition: all 0.3s ease;
-            letter-spacing: 0.8px;
-            min-width: 160px;
+            min-width: 180px;
             color: white;
             border: none;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .btn-custom:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
 
         .btn-login-custom {
-            background-color: var(--button-blue);
+            background-color: #007bff;
         }
         .btn-login-custom:hover {
-            background-color: var(--button-blue-hover);
+            background-color: #0056b3;
         }
 
         .btn-signup-custom {
-            background-color: var(--button-purple);
+            background-color: #6f42c5;
         }
         .btn-signup-custom:hover {
-            background-color: var(--button-purple-hover);
+            background-color: #5b36a8;
         }
 
         .image-section {
@@ -129,6 +139,16 @@
             animation: slideInRight 1s ease-out forwards;
             opacity: 0;
             transform: translateX(50px);
+        }
+
+        .image-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 86, 179, 0.7), rgba(111, 66, 197, 0.7));
         }
 
         @@keyframes slideInLeft {
@@ -156,6 +176,10 @@
                 transform: translateY(20px);
                 text-align: center;
             }
+            .system-subtitle::after {
+                left: 50%;
+                transform: translateX(-50%);
+            }
             .image-section {
                 min-height: 350px;
                 width: 100%;
@@ -164,11 +188,9 @@
             }
             .content-section h1 {
                 font-size: 2.5rem;
-                margin-bottom: 5px;
             }
             .system-subtitle {
                 font-size: 1.3rem;
-                margin-bottom: 20px;
             }
             .btn-group-main {
                 justify-content: center;
@@ -177,25 +199,24 @@
 
         @@media (max-width: 576px) {
             .content-section {
-                padding: 30px 15px;
+                padding: 40px 20px;
             }
             .content-section h1 {
-                font-size: 1.8rem;
+                font-size: 2rem;
             }
             .system-subtitle {
-                font-size: 1.1rem;
-                margin-bottom: 15px;
+                font-size: 1.2rem;
             }
             .content-section p {
-                font-size: 0.9rem;
+                font-size: 1rem;
             }
             .btn-group-main {
                 flex-direction: column;
-                gap: 10px;
+                gap: 15px;
             }
             .btn-custom {
                 width: 100%;
-                padding: 10px 20px;
+                padding: 12px 20px;
             }
             .image-section {
                 min-height: 250px;
@@ -208,27 +229,30 @@
             transform: none;
         }
     </style>
-
 </head>
 <body>
 <div class="content-section">
     <div class="content-wrapper">
+        <img src="@Url.Content("~/images/ctu-logo.png")" alt="CTU Logo" class="university-logo">
         <h1>Cebu Technological University</h1>
         <p class="system-subtitle">Student Enrollment System</p>
         <p>Welcome to the CTU Enrollment System, designed to empower aspiring minds. Explore our leading-edge degree programs, seamlessly manage your application, and step into a future of innovation, research, and community-responsive education.</p>
         <div class="btn-group-main">
             <a href="@Url.Action("Login", "Login")" aria-label="Login to CTU Student Portal">
-                <button class="btn btn-custom btn-login-custom">Login to Portal</button>
+                <button class="btn btn-custom btn-login-custom">
+                    <i class="fas fa-sign-in-alt"></i> Login to Portal
+                </button>
             </a>
             <a asp-controller="Student" asp-action="SignUp" aria-label="Apply now for CTU Enrollment">
-                <button class="btn btn-custom btn-signup-custom">Apply Now</button>
+                <button class="btn btn-custom btn-signup-custom">
+                    <i class="fas fa-user-plus"></i> Apply Now
+                </button>
             </a>
         </div>
-
     </div>
 </div>
 
-<div class="image-section" style="background-image: url('@Url.Content("~/images/image_6dbc1d.png")');">
+<div class="image-section" style="background-image: url('@Url.Content("~/images/ctu-campus.jpg")');">
 </div>
 
 <script src="@Url.Content("~/Content/bootstrap.bundle.min.js")"></script>

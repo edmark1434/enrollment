@@ -8,5 +8,4 @@ public class Program
     public string ProgTitle { get; set; }
 
     // Navigation Properties
-    public ICollection<Curriculum> Curricula { get; set; } = new List<Curriculum>();
 }

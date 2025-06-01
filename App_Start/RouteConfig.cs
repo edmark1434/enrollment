@@ -25,6 +25,16 @@ namespace EnrollmentSystem
                 url: "Teacher/Dashboard",
                 defaults: new { controller = "Teacher", action = "Dashboard" }
             );
+            routes.MapRoute(
+                name: "GetCourse",
+                url: "AddProgram/GetAllCourses/{id}",
+                defaults: new { controller = "AddProgram", action = "GetAllCourses", id = UrlParameter.Optional }
+            );
+            routes.MapRoute(
+                    name: "GetAllCourse",
+                    url: "CurriculumCourse/GetAllCourses/{id}",
+                    defaults: new { controller = "CurriculumCourse", action = "GetAllCourses", id = UrlParameter.Optional }
+                );
             
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
         
@@ -229,6 +239,14 @@ namespace EnrollmentSystem
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
             );
+            routes.MapRoute(
+                name: "GetSubject",
+                url: "{ProgramHead}/{GetCoursesByProgramAndYear}/{id}",
+                defaults: new { controller = "ProgramHead", action = "GetCoursesByProgramAndYear", id = UrlParameter.Optional }
+            );
+         
+          
+            
         }
     }
 }

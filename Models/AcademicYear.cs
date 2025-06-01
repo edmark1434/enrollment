@@ -9,5 +9,4 @@ public class AcademicYear
     public int AyEndYear { get; set; }
 
     // Navigation Properties
-    public ICollection<Curriculum> Curricula { get; set; } = new List<Curriculum>();
 }

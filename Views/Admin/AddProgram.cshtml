@@ -4,7 +4,7 @@
 }
 
 @section Styles {
-<link rel="stylesheet" href="@Url.Content("~/Content/bootstrap.min.css")">
+<link rel="stylesheet" href="@Url.Content("~/Content/edmark.css")">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css">
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
@@ -49,9 +49,7 @@
     <p class="lead">Fill in the details below to add a new course to a program.</p>
 
     <div class="form-card">
-        <form id="addCourseForm" method="post" data-ajax-url="@Url.Action("AddCourseAjax", "AddProgram")">
-            <div id="formMessage"></div>
-
+        <form id="addCourseForm" method="post" data-ajax-url="@Url.Action("AddCourseAjax", "AddProgram")">            <div id="formMessage"></div>
             <!-- Course Category -->
             <div class="mb-3">
                 <label for="courseCategory" class="form-label">Course Category:</label>
@@ -59,7 +57,7 @@
                     <option value="" selected disabled>Select Category...</option>
                     @foreach (var category in ViewBag.CourseCategories as List<EnrollmentSystem.Models.CourseCategory>)
                     {
-                    <option value="@category.Ctg_Code">@category.Ctg_Name</option>
+                    <option value="@category.Ctg_Code" data-code = @category.Ctg_Code>@category.Ctg_Name</option>
                     }
                 </select>
             </div>
@@ -83,10 +81,11 @@
             <!-- Prerequisite - Changed to multiple select -->
             <div class="mb-3">
                 <label for="prerequisite" class="form-label">Co-/Prerequisites:</label>
-                <select class="form-select" id="prerequisite" name="Preq_Crs_Code" multiple="multiple">
+                <select class="form-select" id="prerequisite" name="Preq_Crs_Code" multiple="multiple" required>
+                    <option value="None" >None</option>
                     @foreach (var course in ViewBag.CoursesForPrereq as List<EnrollmentSystem.Models.Course>)
                     {
-                    <option value="@course.Crs_Code">@course.Crs_Code - @course.Crs_Title</option>
+                        <option value="@course.Crs_Code">@course.Crs_Code - @course.Crs_Title</option>
                     }
                 </select>
                 <small class="text-muted">Hold Ctrl/Cmd to select multiple or use the search box</small>
@@ -102,14 +101,19 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label for="lecUnits" class="form-label">Lecture Units:</label>
-                    <input type="number" class="form-control" id="lecUnits" name="Crs_Lec" min="0" value="2" required>
+                    <input type="number" class="form-control" id="lecUnits" name="Crs_Lec" min="0">
                 </div>
                 <div class="col-md-6">
                     <label for="labUnits" class="form-label">Laboratory Units:</label>
-                    <input type="number" class="form-control" id="labUnits" name="Crs_Lab" min="0" value="1" required>
+                    <input type="number" class="form-control" id="labUnits" name="Crs_Lab" min="0">
                 </div>
             </div>
-
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="lecLabSame" name="lecLabSame" hidden>
+                <label class="form-check-label" for="lecLabSame" id="lecLabSameLabel" >
+                    Same value for Lecture and Laboratory Units
+                </label>
+            </div>            <br>
             <!-- Buttons -->
             <button type="submit" class="btn btn-primary">Add Course</button>
             <button type="button" class="btn btn-secondary ms-2" onclick="history.back()">Cancel</button>
@@ -121,36 +125,4 @@
 <script src="@Url.Content("~/Scripts/JQuery/jquery.js")"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="@Url.Content("~/Scripts/MyScript/AddProgram.js")"></script>
-<script>
-    $(document).ready(function() {
-        // Initialize Select2 for prerequisites
-        $('#prerequisite').select2({
-            theme: 'bootstrap-5',
-            placeholder: 'Select prerequisites (if any)',
-            allowClear: true
-        });
-
-        // Update course code prefix when category changes
-        $('#courseCategory').change(function() {
-            const selectedCategory = $(this).val();
-            const categoryCode = selectedCategory ? selectedCategory : '[Select Category]';
-            $('#courseCodePrefix').text(categoryCode);
-            updateFullCourseCodePreview();
-        });
-
-        // Update full course code preview when code input changes
-        $('#courseCode').on('input', function() {
-            updateFullCourseCodePreview();
-        });
-
-        function updateFullCourseCodePreview() {
-            const categoryCode = $('#courseCategory').val() || '';
-            const courseCode = $('#courseCode').val() || '';
-            $('#fullCourseCodePreview').text(categoryCode + courseCode);
-        }
-
-        // Initialize the preview on page load
-        updateFullCourseCodePreview();
-    });
-</script>
 }

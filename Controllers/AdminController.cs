@@ -1,6 +1,7 @@
 using System.Web.Mvc;
 using System.Collections.Generic;
 using System.Configuration;
+using EnrollmentSystem.Controllers.Service;
 using EnrollmentSystem.Models;
 using Npgsql;
 namespace EnrollmentSystem.Controllers
@@ -8,10 +9,12 @@ namespace EnrollmentSystem.Controllers
     public class AdminController : Controller
     {
         private readonly string _connectionString;
+        private readonly IFetchService _fetchService;
 
-        public AdminController()
+        public AdminController(IFetchService fetchService)
         {
             _connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["Enrollment"].ConnectionString;
+            _fetchService = fetchService;
         }
 
         public ActionResult MainAdmin()
@@ -20,18 +23,18 @@ namespace EnrollmentSystem.Controllers
             ViewBag.statList = statList;
             return View("~/Views/Admin/Dashboard.cshtml");
         }
-
+        
         public ActionResult Admin_Curriculum()
         {
-            var programs = GetProgramsFromDatabase();
-            var yearSemesterOptions = GetYearSemesterOptions();
+            var programs = _fetchService.GetProgramsFromDatabase();
+            var yearSemesterOptions = _fetchService.GetAcademicYearsFromDatabase();
 
             // Create a ViewModel or use ViewBag to pass both to the vieww
-            ViewBag.YearSemesterOptions = yearSemesterOptions;
+            ViewBag.AcademicYears = yearSemesterOptions;
 
             return View("~/Views/Admin/Curriculum.cshtml", programs);
         }
-
+        
 
         public ActionResult Admin_Course()
         {
@@ -44,108 +47,13 @@ namespace EnrollmentSystem.Controllers
             return RedirectToAction("Index", "AddProgram"); // Use AddProgramController
         }
 
-        public ActionResult Admin_EditCourse()
+        public ActionResult Admin_Schedule()
         {
-            return View("~/Views/Admin/EditProgram.cshtml");
+            return View("~/Views/Admin/SetSchedules.cshtml");
         }
+
         
-        private List<Program> GetProgramsFromDatabase()
-        {
-            var programs = new List<Program>();
-
-            using (var conn = new NpgsqlConnection(_connectionString))
-            {
-                conn.Open();
-                using (var cmd = new NpgsqlCommand("SELECT \"prog_code\", \"prog_title\" FROM \"program\"", conn))
-                {
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            programs.Add(new Program
-                            {
-                                ProgCode = reader.GetString(0),
-                                ProgTitle = reader.GetString(1)
-                            });
-                        }
-                    }
-                }
-            }
-
-            return programs;
-        }
-
-        private List<AcademicYear> GetAcademicYearsFromDatabase()
-        {
-            var academicYears = new List<AcademicYear>();
-
-            using (var conn = new NpgsqlConnection(_connectionString))
-            {
-                conn.Open();
-                using (var cmd = new NpgsqlCommand("SELECT \"ay_code\", \"ay_start_year\", \"ay_end_year\" FROM \"academic_year\"", conn))
-                {
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            academicYears.Add(new AcademicYear
-                            {
-                                AyCode = reader.GetString(0),
-                                AyStartYear = reader.GetInt16(1),
-                                AyEndYear = reader.GetInt16(2),
-                            });
-                        }
-                    }
-                }
-            }
-
-            return academicYears;
-        }
-
-        private List<Semester> GetSemesterFromDatabase()
-        {
-            var semesters = new List<Semester>();
-
-            using (var conn = new NpgsqlConnection(_connectionString))
-            {
-                conn.Open();
-                using (var cmd = new NpgsqlCommand("SELECT \"sem_id\", \"sem_name\" FROM \"semester\"", conn))
-                {
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            semesters.Add(new Semester
-                            {
-                                SemId = reader.GetInt16(0),
-                                SemName = reader.GetString(1)
-                            });
-                        }
-                    }
-                }
-            }
-
-            return semesters;
-        }
         
-        private List<string> GetYearSemesterOptions()
-        {
-            var academicYears = GetAcademicYearsFromDatabase();
-            var semesters = GetSemesterFromDatabase();
-
-            var result = new List<string>();
-                
-            foreach (var ay in academicYears)
-            {
-                foreach (var sem in semesters)
-                {
-                    result.Add($"{ay.AyCode} - {sem.SemName}");
-                }
-            }
-
-            return result;
-        }
-
         public List<int> getDashboardStat()
         {
             var statList = new List<int>();
@@ -153,9 +61,6 @@ namespace EnrollmentSystem.Controllers
             {
                 conn.Open();
                 statList.Add(getStat(conn, "SELECT COUNT(*) FROM student"));
-                statList.Add(getStat(conn, "SELECT COUNT(*) FROM Faculty WHERE isprofessor  IS TRUE"));
-                statList.Add(getStat(conn, "SELECT COUNT(*) FROM Faculty WHERE isadmin IS TRUE"));
-                statList.Add(getStat(conn, "SELECT COUNT(*) FROM Faculty WHERE isprogramhead IS TRUE"));
                 statList.Add(getStat(conn, "SELECT COUNT(*) FROM Course"));
             }
             return statList;
@@ -175,6 +80,50 @@ namespace EnrollmentSystem.Controllers
                 }   
             }
             return stat;
+        }
+
+        public ActionResult AdminControl()
+        {
+            ViewBag.AcademicYears = _fetchService.GetAcademicYearsFromDatabase();
+            ViewBag.Programs = _fetchService.GetProgramsFromDatabase();
+            ViewBag.Semester = _fetchService.GetSemesterFromDatabase();
+            ViewBag.CurrentEnrollement = _fetchService.GetCurrentEnrollments();
+            ViewBag.Room = _fetchService.GetRoomsFromDatabase();
+            ViewBag.Professor = _fetchService.GetProfessorFromDatabase();
+            return View();
+        }
+
+        public ActionResult EnrollmentApproval()
+        {
+            return View();
+        }
+
+        public ActionResult ScheduleManagement()
+        {
+            return View();
+        }
+        [HttpPost]
+        public ActionResult updateCurrentEnrollments(CurrentEnrollment current)
+        {
+            using (var conn = new NpgsqlConnection(_connectionString))
+            {
+                using (var cmd = new NpgsqlCommand(
+                           "UPDATE enrollment_season SET ay_code = @ay, sem_id = @sem , is_open = @open where enroll_season_id = 1",
+                           conn))
+                {
+                    conn.Open();
+                    cmd.Parameters.AddWithValue("@ay", current.ay_code);
+                    cmd.Parameters.AddWithValue("@sem", current.sem_id);
+                    cmd.Parameters.AddWithValue("@open", current.is_open);
+                    var result = cmd.ExecuteNonQuery();
+
+                    if (result > 0)
+                    {
+                        return Json(new { success = true, message = "Current Enrollment Updated Successfully" ,redirectUrl = "Admin/AdminControl"},JsonRequestBehavior.AllowGet);
+                    }
+                    return Json(new { success = false, message = "Error Updating Current Enrollment" },JsonRequestBehavior.AllowGet);
+                }
+            }
         }
     }
 }

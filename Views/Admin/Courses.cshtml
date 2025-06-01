@@ -1,150 +1,206 @@
 @model IEnumerable<EnrollmentSystem.Models.Course>
 
 @{
-Layout = "~/Views/Shared/_AdminHeader.cshtml";
+    Layout = "~/Views/Shared/_AdminHeader.cshtml";
 }
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Courses - Enrollment System</title>
-
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="@Url.Content("~/Content/bootstrap.min.css")">
-
-    <!-- Custom Styles -->
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+        .accordion-body {
+            max-height: 300px;
+            overflow-y: auto;
         }
 
-        .content-section {
-            padding: 30px;
-            flex-grow: 1;
-        }
-
-        .course-table {
-            background-color: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .action-buttons .btn {
-            margin-right: 5px;
-        }
-
-        .form-card {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
+        .total-units {
+            font-weight: bold;
+            text-align: right;
         }
     </style>
 </head>
 <body>
 
-<!-- Header Placeholder -->
-<div id="admin-header-placeholder">
-    @{
-    // Render the admin header as a partial view
-    }
-</div>
+<div class="container content-section mt-5">
+    <h3>Courses by Category</h3>
 
-<!-- Main Content -->
-<!-- Courses List Table -->
-<div class="course-table mb-5">
-    <h3 class="mb-3">Courses List</h3>
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="table-primary">
-                <tr>
-                    <th>Course Code</th>
-                    <th>Descriptive Title</th>
-                    <th>Course Category</th> <!-- Added new column -->
-                    <th>Co-/Prerequisite</th>
-                    <th>Units</th>
-                    <th>Lec Hours</th>
-                    <th>Lab Hours</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model == null || !Model.Any())
-                {
-                    <tr>
-                        <td colspan="8" class="text-center text-muted">No courses found.</td>
-                    </tr>
-                }
-                else
-                {
-                    foreach (var course in Model)
-                    {
-                        <tr>
-                            <td>@course.Crs_Code</td>
-                            <td>@course.Crs_Title</td>
-                            <td>@course.Ctg_Name</td>
-                            <td>
-                                @if (string.IsNullOrEmpty(course.Preq_Crs_Code))
-                                {
-                                    <text>None</text>
-                                }
-                                else
-                                {
-                                    @course.Preq_Crs_Code
-                                }
-                            </td>
-                            <td>@course.Crs_Units</td>
-                            <td>@course.Crs_Lec</td>
-                            <td>@course.Crs_Lab</td>
-                            <td class="action-buttons">
-                                @Html.ActionLink("Edit", "EditCourse", "Admin", new { id = course.Crs_Code }, new { @class = "btn btn-sm btn-warning" })
-                                @Html.ActionLink("Delete", "DeleteCourse", "Admin", new { id = course.Crs_Code }, new {
-                                    @class = "btn btn-sm btn-danger",
-                                    onclick = "return confirm('Are you sure you want to delete this course?');"
-                                })
-                            </td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
+    @{
+        var allCategories = new List<string> {
+            "Core Courses",
+            "Mandated Course, Rizal",
+            "Elective Courses",
+            "Common Courses",
+            "Professional Courses",
+            "On-the-Job Training",
+            "Professional Electives",
+            "Professional Domain Courses",
+            "Physical Education",
+            "National Service Training Program"
+        };
+    }
+
+    @foreach (var categoryName in allCategories)
+    {
+        var group = Model?.Where(c => c.Ctg_Name == categoryName) ?? Enumerable.Empty<EnrollmentSystem.Models.Course>();
+        decimal totalUnits = group.Sum(c => c.Crs_Units);
+
+        <div class="accordion mb-3" id="categoryAccordion-@categoryName.Replace(" ", "").Replace(",", "")">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading-@categoryName.Replace(" ", "").Replace(",", "")">
+                    <button class="accordion-button collapsed" type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#collapse-@categoryName.Replace(" ", "").Replace(",", "")"
+                            aria-expanded="false"
+                            aria-controls="collapse-@categoryName.Replace(" ", "").Replace(",", "")">
+                        @categoryName
+                        <span class="ms-auto total-units">Total Units: @totalUnits.ToString("F1")</span>
+                    </button>
+                </h2>
+                <div id="collapse-@categoryName.Replace(" ", "").Replace(",", "")"
+                     class="accordion-collapse collapse"
+                     aria-labelledby="heading-@categoryName.Replace(" ", "").Replace(",", "")">
+                    <div class="accordion-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Course Code</th>
+                                        <th>Title</th>
+                                        <th>Prerequisite</th>
+                                        <th>Units</th>
+                                        <th>Lec</th>
+                                        <th>Lab</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (!group.Any())
+                                    {
+                                        <tr><td colspan="7" class="text-center">No courses found.</td></tr>
+                                    }
+                                    else
+                                    {
+                                        foreach (var course in group)
+                                        {
+                                            <tr>
+                                                <td>@course.Crs_Code</td>
+                                                <td>@course.Crs_Title</td>
+                                                <td>@(string.IsNullOrEmpty(course.Preq_Crs_Code) ? "None" : course.Preq_Crs_Code)</td>
+                                                <td>@course.Crs_Units</td>
+                                                <td>@course.Crs_Lec</td>
+                                                <td>@course.Crs_Lab</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-warning edit-course" 
+                                                            data-code="@course.Crs_Code"
+                                                            data-title="@course.Crs_Title"
+                                                            data-prereq="@course.Preq_Crs_Code"
+                                                            data-units="@course.Crs_Units"
+                                                            data-lec="@course.Crs_Lec"
+                                                            data-lab="@course.Crs_Lab"
+                                                            data-category="@course.Ctg_Name">
+                                                        Edit
+                                                    </button>
+                                                    <a href="javascript:void(0);" 
+                                                       class="btn btn-sm btn-danger delete-course"
+                                                       data-code="@course.Crs_Code">
+                                                        Delete
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 
     <!-- Add New Course Button -->
     @Html.ActionLink("Add New Course", "Admin_AddCourse", "Admin", null, new { @class = "btn btn-success mt-3" })
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editCourseModal" tabindex="-1" aria-labelledby="editCourseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" action="@Url.Action("UpdateCourse", "Course")">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editCourseModalLabel">Edit Course</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editCrsCode" name="crsCode" />
+
+                        <div class="mb-3">
+                            <label for="editCrsTitle" class="form-label">Title:</label>
+                            <input type="text" class="form-control" id="editCrsTitle" name="crsTitle" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editPreqCrsCode" class="form-label">Prerequisite:</label>
+                            <input type="text" class="form-control" id="editPreqCrsCode" name="preqCrsCode">
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <label for="editCrsUnits" class="form-label">Units:</label>
+                                <input type="number" step="0.5" class="form-control" id="editCrsUnits" name="crsUnits" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="editCrsLec" class="form-label">Lec Hours:</label>
+                                <input type="number" class="form-control" id="editCrsLec" name="crsLec" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="editCrsLab" class="form-label">Lab Hours:</label>
+                                <input type="number" class="form-control" id="editCrsLab" name="crsLab" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Bootstrap JS -->
+<!-- Scripts -->
+<script src="@Url.Content("~/Scripts/jquery-3.7.0.js")"></script>
 <script src="@Url.Content("~/Scripts/bootstrap.bundle.min.js")"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-<!-- Inline Script -->
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="@Url.Content("~/Scripts/MyScript/Course.js")"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<!-- Select2 CSS -->
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const currentPath = window.location.pathname;
-        const currentPage = currentPath.substring(currentPath.lastIndexOf('/') + 1);
-        const navLinks = document.querySelectorAll('#navbarNavAdmin .nav-link');
-
-        navLinks.forEach(link => {
-            const linkHref = link.getAttribute('href');
-            const linkPage = linkHref ? linkHref.substring(linkHref.lastIndexOf('/') + 1) : '';
-
-            if (linkPage.ToLower() === currentPage.ToLower()) {
-                link.classList.add('active');
-                link.setAttribute('aria-current', 'page');
-            } else {
-                link.classList.remove('active');
-                link.removeAttribute('aria-current');
-            }
-        });
-    });
+    function confirmDelete(courseId) {
+        if (confirm('Are you sure you want to delete this course?')) {
+            $.ajax({
+                url: '@Url.Action("DeleteCourse", "Course")',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ id: courseId }),
+                success: function (response) {
+                    location.reload(); // Refresh page after deletion
+                },
+                error: function () {
+                    alert('Failed to delete course.');
+                }
+            });
+        }
+    }
 </script>
 
 </body>

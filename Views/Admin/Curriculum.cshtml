@@ -1,17 +1,15 @@
-@model IEnumerable<EnrollmentSystem.Models.Program>
-
-
 @{
-    Layout = "~/Views/Shared/_AdminHeader.cshtml";
+Layout = "~/Views/Shared/_AdminHeader.cshtml";
 }
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Programs - Enrollment System</title>
-    <link rel="stylesheet" href="@Url.Content("~/Content/bootstrap.min.css")">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manage Curriculum - Enrollment System</title>
+    <link rel="stylesheet" href="@Url.Content("~/Content/bootstrap.min.css")" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -32,72 +30,31 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
             margin-bottom: 20px;
         }
-        #programDetailsTable {
-            display: none;
-        }
-        .action-buttons button {
-            margin-right: 5px;
+        #assignedCurriculumTable {
+            width: 100%;
         }
         .course-search {
             margin-bottom: 15px;
         }
-        .course-item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .course-item:hover {
-            background-color: #f8f9fa;
-        }
-        .course-checkbox {
-            margin-right: 10px;
-        }
     </style>
 </head>
 <body>
-
 <div class="container content-section">
     <h1 class="mb-4">Manage Curriculum</h1>
-    <p class="lead">Add, edit, or remove academic programs offered by the institution and view their course offerings by year and semester.</p>
+    <p class="lead">Assign and manage curriculum for academic programs.</p>
+
     <div class="program-card">
-        <h3 class="mb-3">Program Details</h3>
         <div class="row g-3 align-items-end">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label for="programSelect" class="form-label">Select Program:</label>
                 <select class="form-select" id="programSelect" name="programSelect">
                     <option value="" selected disabled>Choose Program...</option>
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var program in Model)
-                        {
-                            <option value="@program.ProgCode">@program.ProgTitle</option>
-                        }
-                    }
-                    else
-                    {
-                        <option disabled>No programs found</option>
-                    }
                 </select>
             </div>
             <div class="col-md-4">
                 <label for="academicYearSelect" class="form-label">Academic Year:</label>
                 <select class="form-select" id="academicYearSelect" name="academicYearSelect">
                     <option value="" selected disabled>Choose Academic Year...</option>
-                    @{
-                        var academicYears = ViewBag.AcademicYears as List<Fresh_University_Enrollment.Models.AcademicYear>;
-                        if (academicYears?.Any() == true)
-                        {
-                            foreach (var year in academicYears)
-                            {
-                                <option value="@year.AyCode">@year.AyStartYear - @year.AyEndYear</option>
-                            }
-                        }
-                        else
-                        {
-                            <option disabled>No academic years available</option>
-                        }
-                    }
                 </select>
             </div>
             <div class="col-md-4">
@@ -120,28 +77,52 @@
             </div>
         </div>
 
-        <div id="programDetailsTable" class="mt-4">
-            <h4 id="selectedProgramTitle"></h4>
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped mt-3">
-                    <thead>
-                    <tr>
-                        <th>Course Code</th>
-                        <th>Descriptive Title</th>
-                        <th>Co-/Prerequisite</th>
-                        <th>Units</th>
-                        <th>Lec</th>
-                        <th>Lab</th>
-                        <th>Total</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody id="programTableBody"></tbody>
-                </table>
+        <button class="btn btn-success mt-3" data-bs-toggle="modal" data-bs-target="#assignCourseModal">Manage Courses</button>
+    </div>
+
+    <!-- Assigned Curriculum Table -->
+    <div id="assignedCurriculum" class="mt-5">
+        <h3>Assigned Curriculum</h3>
+
+        <!-- Filter Controls -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label for="filterProgram" class="form-label">Filter by Program:</label>
+                <select class="form-select" id="filterProgram">
+                    <option value="">All Programs</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="filterSemester" class="form-label">Filter by Semester:</label>
+                <select class="form-select" id="filterSemester">
+                    <option value="">All Semesters</option>
+                    <option value="1st Semester">1st Semester</option>
+                    <option value="2nd Semester">2nd Semester</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="filterAY" class="form-label">Filter by Academic Year:</label>
+                <select class="form-select" id="filterAY">
+                    <option value="">All Years</option>
+                </select>
             </div>
         </div>
-        <button class="btn btn-success mt-3" data-bs-toggle="modal" data-bs-target="#assignCourseModal">Assign Course</button>
-        <button class="btn btn-primary mt-3 ms-2" id="clearFiltersBtn" style="display:none;">Clear Filters</button>
+
+        <!-- Curriculum Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" id="assignedCurriculumTable">
+                <thead>
+                <tr>
+                    <th>Program</th>
+                    <th>Course Code</th>
+                    <th>Year Level</th>
+                    <th>Semester</th>
+                    <th>Academic Year</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -150,7 +131,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="assignCourseModalLabel">Assign Courses to Program</h5>
+                <h5 class="modal-title" id="assignCourseModalLabel">Assign Courses</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -164,17 +145,21 @@
                         <p class="fw-bold" id="modalYearSemester">-</p>
                     </div>
                 </div>
-                <div class="course-search">
+                <div class="course-search mb-3">
                     <input type="text" class="form-control" id="courseSearch" placeholder="Search courses...">
                 </div>
                 <div class="course-list-container" style="max-height: 400px; overflow-y: auto;">
                     <table class="table">
                         <thead>
                         <tr>
-                            <th width="50px"></th>
+                            <th><input type="checkbox" id="toggleAll"></th>
                             <th>Course Code</th>
                             <th>Title</th>
+                            <th>Category</th>
+                            <th>Prerequisite</th>
                             <th>Units</th>
+                            <th>Lec</th>
+                            <th>Lab</th>
                         </tr>
                         </thead>
                         <tbody id="availableCoursesList"></tbody>
@@ -183,40 +168,14 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="confirmAssign">Assign Selected Courses</button>
+                <button type="button" class="btn btn-primary" id="confirmAssign">Assign Selected</button>
             </div>
         </div>
     </div>
 </div>
 
-<script src="@Url.Content("~/Scripts/jquery-3.6.0.min.js")"></script>
+<script src="@Url.Content("~/Scripts/jquery-3.7.0.js")"></script>
 <script src="@Url.Content("~/Scripts/bootstrap.bundle.min.js")"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const programSelect = document.getElementById('programSelect');
-        const programDetailsTable = document.getElementById('programDetailsTable');
-        const selectedProgramTitle = document.getElementById('selectedProgramTitle');
-        const programTableBody = document.getElementById('programTableBody');
-        const modalProgramName = document.getElementById('modalProgramName');
-        const modalYearSemester = document.getElementById('modalYearSemester');
-        const availableCoursesList = document.getElementById('availableCoursesList');
-        const courseSearch = document.getElementById('courseSearch');
-
-        const programData = {
-            "BSIT": [
-                { code: "IT101", title: "Introduction to Computing", prerequisite: "None", units: 3, lec: 3, lab: 0, year: "1st Year", semester: "1st Semester" },
-                { code: "IT102", title: "Programming Logic and Design", prerequisite: "None", units: 3, lec: 2, lab: 1, year: "1st Year", semester: "1st Semester" },
-                { code: "GE101", title: "Understanding the Self", prerequisite: "None", units: 3, lec: 3, lab: 0, year: "1st Year", semester: "1st Semester" },
-                { code: "IT103", title: "Web Development Fundamentals", prerequisite: "IT102", units: 3, lec: 2, lab: 1, year: "1st Year", semester: "2nd Semester" }
-            ],
-            "BSCS": [
-                // Add your BSCS course entries here...
-            ]
-        };
-
-        // JS logic to populate and handle filters, search, etc...
-    });
-</script>
-
+<script src="@Url.Content("~/Scripts/MyScript/Curriculum.js")"></script>
 </body>
 </html>

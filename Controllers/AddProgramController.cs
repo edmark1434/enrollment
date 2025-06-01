@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Security.Policy;
 using System.Web.Mvc;
 using EnrollmentSystem.Models;
@@ -34,26 +35,53 @@ namespace EnrollmentSystem.Controllers
             }
         }
 
-        // POST: /AddProgram/AddCourseAjax
+        public JsonResult GetAllCourses()
+        {
+            var course = _courseRepository.GetAllCourses();
+            return Json(new { data = course }, JsonRequestBehavior.AllowGet);
+        }
+
         [HttpPost]
         public JsonResult AddCourseAjax(Course course)
         {
-            if (!ModelState.IsValid)
-            {
-                return Json(new { success = false, message = "Invalid input data." });
-            }
-
             try
             {
+                // Validate input
+                if (course == null)
+                {
+                    return Json(new { success = false, message = "Course data is null." });
+                }
+
+                // Validate required fields
+                var errors = new Dictionary<string, string>();
+
+                if (string.IsNullOrWhiteSpace(course.Crs_Code))
+                    errors.Add("Crs_Code", "Course code is required");
+
+                if (string.IsNullOrWhiteSpace(course.Crs_Title))
+                    errors.Add("Crs_Title", "Course title is required");
+
+                if (string.IsNullOrWhiteSpace(course.Ctg_Code))
+                    errors.Add("Ctg_Code", "Category code is required");
+
+                if (errors.Any())
+                    return Json(new { success = false, errors });
+
+                // Handle null prerequisite
+                course.Preq_Crs_Code = string.IsNullOrWhiteSpace(course.Preq_Crs_Code) ? null : course.Preq_Crs_Code;
+
+                // Save to database
                 var result = _courseRepository.AddCourse(course);
                 return result;
             }
             catch (Exception ex)
             {
-                return Json(new { 
-                    success = false, 
-                    message = "An error occurred while saving the course.",
-                    error = ex.Message 
+                System.Diagnostics.Debug.WriteLine($"Error in AddCourseAjax: {ex}");
+                return Json(new
+                {
+                    success = false,
+                    message = "An unexpected error occurred.",
+                    error = ex.Message
                 });
             }
         }
@@ -153,38 +181,66 @@ namespace EnrollmentSystem.Controllers
         }
 
         private void InsertMainCourse(NpgsqlConnection conn, Course course)
-        {
-            const string insertCourseSql = @"
-                INSERT INTO COURSE (
-                    CRS_CODE, 
-                    CRS_TITLE, 
-                    CTG_CODE, 
-                    PREQ_ID, 
-                    CRS_UNITS, 
-                    CRS_LEC, 
-                    CRS_LAB
-                ) VALUES (
-                    @code, 
-                    @title, 
-                    @ctgCode, 
-                    @prereq, 
-                    @units, 
-                    @lec, 
-                    @lab)";
+{
+    const string insertCourseSql = @"
+        INSERT INTO COURSE (
+            CRS_CODE, 
+            CRS_TITLE, 
+            CTG_CODE, 
+            PREQ_ID, 
+            CRS_UNITS, 
+            CRS_LEC, 
+            CRS_LAB
+        ) VALUES (
+            @code, 
+            @title, 
+            @ctgCode, 
+            @prereq, 
+            @units, 
+            @lec, 
+            @lab)";
 
-            using (var cmd = new NpgsqlCommand(insertCourseSql, conn))
-            {
-                cmd.Parameters.AddWithValue("code", course.Crs_Code);
-                cmd.Parameters.AddWithValue("title", course.Crs_Title);
-                cmd.Parameters.AddWithValue("ctgCode", course.Ctg_Code);
-                cmd.Parameters.AddWithValue("prereq", course.Preq_Crs_Code);
-                cmd.Parameters.AddWithValue("units", course.Crs_Units);
-                cmd.Parameters.AddWithValue("lec", course.Crs_Lec);
-                cmd.Parameters.AddWithValue("lab", course.Crs_Lab);
+    // Join multiple prerequisites with comma for the PREQ_ID field
+    string prereqString = course.Preq_Crs_Code != null ? 
+        string.Join(",", course.Preq_Crs_Code) : 
+        null;
 
-                cmd.ExecuteNonQuery();
-            }
-        }
+    using (var cmd = new NpgsqlCommand(insertCourseSql, conn))
+    {
+        cmd.Parameters.AddWithValue("code", course.Crs_Code);
+        cmd.Parameters.AddWithValue("title", course.Crs_Title);
+        cmd.Parameters.AddWithValue("ctgCode", course.Ctg_Code);
+        cmd.Parameters.AddWithValue("prereq", prereqString ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("units", course.Crs_Units);
+        cmd.Parameters.AddWithValue("lec", course.Crs_Lec);
+        cmd.Parameters.AddWithValue("lab", course.Crs_Lab);
+        cmd.ExecuteNonQuery();
+    }
+    
+    // Insert each prerequisite separately
+    if (course.Preq_Crs_Code != null && course.Preq_Crs_Code.Length > 0)
+    {
+        const string insertPrereqSql = @"
+            INSERT INTO PREREQUISITE (
+                CRS_CODE, 
+                PREQ_CRS_CODE
+            ) VALUES (
+                @crsCode, 
+                @preqCode)";
+
+        
+           
+                using (var cmd = new NpgsqlCommand(insertPrereqSql, conn))
+                {
+                    cmd.Parameters.AddWithValue("crsCode", course.Crs_Code);     
+                    cmd.Parameters.AddWithValue("preqCode", course.Preq_Crs_Code); 
+                    cmd.ExecuteNonQuery();
+                }
+            
+        
+    }
+}
+
         
 
         public List<CourseCategory> GetCourseCategories()

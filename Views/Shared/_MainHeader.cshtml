@@ -20,15 +20,11 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "StudentEnroll" ? "active" : "")"
-                       href="@Url.Action("Student_Enrollment", "Main")">ENROLL</a>
+                       href="@Url.Action("Enrollment", "Admin")">ENROLL</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "ClassSchedule" ? "active" : "")"
                        href="@Url.Action("Student_Schedule", "Main")">CLASS SCHEDULE</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "ViewGrades" ? "active" : "")"
-                       href="@Url.Action("Student_Grade", "Main")">VIEW GRADES</a>
                 </li>
             </ul>
             <ul class="navbar-nav">

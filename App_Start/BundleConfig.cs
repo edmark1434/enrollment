@@ -23,7 +23,7 @@ namespace EnrollmentSystem
                       "~/Scripts/bootstrap.js"));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
-                      "~/Content/bootstrap.css",
+                      "~/Content/edmark.css",
                       "~/Content/site.css"));
         }
     }

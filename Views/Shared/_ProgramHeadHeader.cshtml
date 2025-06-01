@@ -40,7 +40,7 @@
                     })
                 </li>
                 <li class="nav-item">
-                    @Html.ActionLink("Set Schedules", "Schedule", "ProgramHead", null, new {
+                    @Html.ActionLink("Set Schedules", "index", "Schedule", null, new {
                         @class = "nav-link " + (ViewContext.RouteData.Values["Action"]?.ToString() == "Set Schedules" ? "active" : "")
                     })
                 </li>

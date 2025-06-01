@@ -38,6 +38,21 @@
                     <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Courses" ? "active" : "")"
                        href="@Url.Action("Admin_Course", "Admin")">Courses</a>
                 </li>
+                <li class="nav-item">
+                    @Html.ActionLink("Set Schedules", "Admin_Schedule", "Admin", null, new {
+                        @class = "nav-link " + (ViewContext.RouteData.Values["Action"]?.ToString() == "Set Schedules" ? "active" : "")
+                    })
+                </li>
+                <li class="nav-item">
+                    @Html.ActionLink("Enrollment Approval", "EnrollmentApproval", "Admin", null, new {
+                        @class = "nav-link " + (ViewContext.RouteData.Values["Action"]?.ToString() == "Enrollment Approval" ? "active" : "")
+                    })
+                </li>
+                <li class="nav-item">
+                    @Html.ActionLink("Admin Controls", "AdminControl", "Admin", null, new {
+                        @class = "nav-link " + (ViewContext.RouteData.Values["Action"]?.ToString() == "Admin Controls" ? "active" : "")
+                    })
+                </li>
             </ul>
             <ul class="navbar-nav">
                 <li class="nav-item">

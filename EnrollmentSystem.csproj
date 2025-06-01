@@ -159,6 +159,21 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.Abstractions, Version=5.11.1.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
+      <HintPath>packages\Unity.Abstractions.5.11.1\lib\net47\Unity.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Container, Version=5.11.1.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
+      <HintPath>packages\Unity.Container.5.11.1\lib\net47\Unity.Container.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Mvc, Version=5.11.1.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
+      <HintPath>packages\Unity.Mvc.5.11.1\lib\net47\Unity.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Mvc5, Version=1.4.0.0, Culture=neutral, PublicKeyToken=43da31bc42a85347, processorArchitecture=MSIL">
+      <HintPath>packages\Unity.Mvc5.1.4.0\lib\net45\Unity.Mvc5.dll</HintPath>
+    </Reference>
+    <Reference Include="WebActivatorEx, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
+      <HintPath>packages\WebActivatorEx.2.2.0\lib\net40\WebActivatorEx.dll</HintPath>
+    </Reference>
     <Reference Include="WebGrease">
       <Private>True</Private>
       <HintPath>packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
@@ -177,31 +192,50 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\UnityConfig.cs" />
     <Compile Include="Controllers\AddProgramController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\Auth\AuthController.cs" />
     <Compile Include="Controllers\Auth\LoginController.cs" />
     <Compile Include="Controllers\CourseController.cs" />
+    <Compile Include="Controllers\CurriculumCourseController.cs" />
+    <Compile Include="Controllers\fetchController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MainController.cs" />
-    <Compile Include="Controllers\ProgramHeadController.cs" />
+    <Compile Include="Controllers\ScheduleController.cs" />
+    <Compile Include="Controllers\Service\fetchService.cs" />
     <Compile Include="Controllers\TeacherController.cs" />
-    <Compile Include="Controllers\StudentEnrollment.cs" />
+    <Compile Include="Controllers\StudentEnrollmentController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AcademicYear.cs" />
+    <Compile Include="Models\BlkSec.cs" />
     <Compile Include="Models\Course.cs" />
     <Compile Include="Models\CourseCategory.cs" />
-    <Compile Include="Models\Curriculum.cs" />
+    <Compile Include="Models\CurrentEnrollment.cs" />
     <Compile Include="Models\CurriculumCourse.cs" />
+    <Compile Include="Models\Enrollment.cs" />
     <Compile Include="Models\Faculty.cs" />
     <Compile Include="Models\Prerequisite.cs" />
+    <Compile Include="Models\Professor.cs" />
     <Compile Include="Models\Program.cs" />
+    <Compile Include="Models\Room.cs" />
+    <Compile Include="Models\Schedule.cs" />
+    <Compile Include="Models\Session.cs" />
     <Compile Include="Models\Semester.cs" />
     <Compile Include="Models\Student.cs" />
+    <Compile Include="Models\SubjectViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities\PasswordUtil.cs" />
+    <Content Include="Scripts\MyScript\AdminControl.js" />
+    <Content Include="Views\Admin\AdminControl.cshtml" />
+    <Content Include="Scripts\MyScript\AddSchedule.js" />
+    <Content Include="Scripts\MyScript\AddSession.js" />
+    <Content Include="Scripts\MyScript\SessionsModal.js" />
+    <Content Include="Views\Admin\EnrollmentApproval.cshtml" />
+    <Content Include="Views\Admin\ScheduleManagement.cshtml" />
+    <Content Include="Views\Admin\SetSchedules.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap-grid.css" />
@@ -221,6 +255,7 @@
     <Content Include="Content\bootstrap.min.css-x" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\edmark.css" />
     <Content Include="Enrollment_Db.sql" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
@@ -246,8 +281,11 @@
     <Content Include="Scripts\JQuery\jquery.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\MyScript\AddProgram.js" />
+    <Content Include="Scripts\MyScript\Course.js" />
+    <Content Include="Scripts\MyScript\Curriculum.js" />
     <Content Include="Scripts\MyScript\LogIn.js" />
     <Content Include="Scripts\MyScript\LogInFaculty.js" />
+    <Content Include="Scripts\MyScript\schedule-management.js" />
     <Content Include="Scripts\MyScript\SignUp.js" />
     <Content Include="Scripts\MyScript\StudentEnroll.js" />
     <Content Include="Views\Admin\AddProgram.cshtml" />
@@ -263,19 +301,11 @@
     <Content Include="Views\Main\Home.cshtml" />
     <Content Include="Views\Main\StudentEnroll.cshtml" />
     <Content Include="Views\Main\StudentProfile.cshtml" />
-    <Content Include="Views\Main\ViewGrades.cshtml" />
     <Content Include="Views\Program-Head\ClassManagement.cshtml" />
     <Content Include="Views\Program-Head\Dashboard.cshtml" />
-    <Content Include="Views\Program-Head\EnrollmentApproval.cshtml" />
-    <Content Include="Views\Program-Head\SetSchedules.cshtml" />
-    <Content Include="Views\Program-Head\StudentManagement.cshtml" />
-    <Content Include="Views\Program-Head\ViewStudentList.cshtml" />
     <Content Include="Views\Shared\_AdminHeader.cshtml" />
     <Content Include="Views\Shared\_MainHeader.cshtml" />
     <Content Include="Views\Shared\_ProgramHeadHeader.cshtml" />
-    <Content Include="Views\Shared\_TeacherHeader.cshtml" />
-    <Content Include="Views\Teacher\Classes.cshtml" />
-    <Content Include="Views\Teacher\Dashboard.cshtml" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

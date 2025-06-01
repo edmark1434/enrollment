@@ -1,10 +1,7 @@
 @{
-    Layout = "~/Views/Shared/_AdminHeader.cshtml"; // Make sure this layout includes @RenderSection("Scripts", required: false)
+    Layout = "~/Views/Shared/_AdminHeader.cshtml";
     var student = ViewBag.statList[0];
-    var admin = ViewBag.statList[1];
-    var professor = ViewBag.statList[2];
-    var programHead = ViewBag.statList[3];
-    var course = ViewBag.statList[4];
+    var course = ViewBag.statList[1];
 }
 
 <!DOCTYPE html>
@@ -12,88 +9,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Enrollment System</title>
-    <link rel="stylesheet" href="@Url.Content("~/Content/bootstrap.min.css")">
+    <title>Admin Dashboard - University Enrollment System</title>
+    <link rel="stylesheet" href="@Url.Content("~/Content/edmark.css")">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #27ae60;
+        }
+        
         body {
-            font-family: 'Inter', sans-serif; /* Assuming Inter font is desired */
-            background-color: #f0f2f5;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            color: var(--dark-color);
         }
+        
         .content-section {
-            padding: 30px;
+            padding: 40px;
             flex-grow: 1;
-            margin-top: 56px; /* Adjust based on header height to prevent overlap */
+            margin-top: 70px; /* Adjusted for header height */
         }
-        /* Styling for the new metric cards */
-        .metric-card {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slightly more prominent shadow */
-            margin-bottom: 20px;
-            text-align: center;
+        
+        .dashboard-header {
+            margin-bottom: 30px;
         }
-        .metric-card h3 {
-            font-size: 1.2rem;
-            color: #6c757d; /* Muted color for title */
+        
+        .dashboard-header h1 {
+            font-weight: 700;
+            color: var(--primary-color);
             margin-bottom: 10px;
         }
+        
+        .dashboard-header p.lead {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .metric-card {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border-top: 4px solid var(--secondary-color);
+            height: 100%;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
+        
+        .metric-card h3 {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
         .metric-card .count {
             font-size: 2.5rem;
             font-weight: 700;
-            color: #007bff; /* Primary color for the count */
+            color: var(--secondary-color);
+            margin-bottom: 10px;
         }
+        
+        .metric-card .icon {
+            font-size: 2rem;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+        
+        .metric-card.admin { border-top-color: #e74c3c; }
+        .metric-card.admin .count,
+        .metric-card.admin .icon { color: #e74c3c; }
+        
+        .metric-card.program-head { border-top-color: #f39c12; }
+        .metric-card.program-head .count,
+        .metric-card.program-head .icon { color: #f39c12; }
+        
+        .metric-card.teacher { border-top-color: #27ae60; }
+        .metric-card.teacher .count,
+        .metric-card.teacher .icon { color: #27ae60; }
+        
+        .metric-card.student { border-top-color: #3498db; }
+        .metric-card.student .count,
+        .metric-card.student .icon { color: #3498db; }
+        
+        .metric-card.course { border-top-color: #9b59b6; }
+        .metric-card.course .count,
+        .metric-card.course .icon { color: #9b59b6; }
+        
+        .metric-card.subject { border-top-color: #1abc9c; }
+        .metric-card.subject .count,
+        .metric-card.subject .icon { color: #1abc9c; }
     </style>
 </head>
 <body>
-<div id="admin-header-placeholder">
-</div>
+<div id="admin-header-placeholder"></div>
 
 <div class="container content-section">
-    <h1 class="mb-4">Admin Dashboard</h1>
-    <p class="lead">Welcome, Admin! Here you can find an overview of key system metrics.</p>
+    <div class="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <p class="lead">Welcome back! Here's an overview of the university enrollment system.</p>
+    </div>
 
     <div class="row">
+      
+        
         <div class="col-md-4 col-sm-6 mb-4">
-            <div class="metric-card">
-                <h3>Total Admins</h3>
-                <div class="count">@admin</div>
-
-            </div>
-        </div>
-        <div class="col-md-4 col-sm-6 mb-4">
-            <div class="metric-card">
-                <h3>Total Program Heads</h3>
-                <div class="count">@programHead</div>
-
-            </div>
-        </div>
-        <div class="col-md-4 col-sm-6 mb-4">
-            <div class="metric-card">
-                <h3>Total Teachers</h3>
-                <div class="count">@professor</div>
-            </div>
-        </div>
-        <div class="col-md-4 col-sm-6 mb-4">
-            <div class="metric-card">
+            <div class="metric-card student">
+                <div class="icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
                 <h3>Total Students</h3>
                 <div class="count">@student</div>
             </div>
         </div>
         <div class="col-md-4 col-sm-6 mb-4">
-            <div class="metric-card">
+            <div class="metric-card course">
+                <div class="icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
                 <h3>Total Courses</h3>
                 <div class="count">@course</div>
             </div>
         </div>
         <div class="col-md-4 col-sm-6 mb-4">
-            <div class="metric-card">
-                <h3>Total Subjects</h3>
-                <div class="count">120</div>
-                <div class="count">@ViewBag.TotalSubjects</div>
+            <div class="metric-card subject">
+                <div class="icon">
+                    <i class="fas fa-book"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -105,7 +161,8 @@
         // Highlight active link after header is loaded
         const currentPath = window.location.pathname;
         const currentPage = currentPath.substring(currentPath.lastIndexOf('/') + 1);
-        const navLinks = document.querySelectorAll('#navbarNavAdmin .nav-link'); // Use #navbarNavAdmin for this specific header
+        const navLinks = document.querySelectorAll('#navbarNavAdmin .nav-link');
+        
         navLinks.forEach(link => {
             const linkHref = link.getAttribute('href');
             const linkPage = linkHref.substring(linkHref.lastIndexOf('/') + 1);

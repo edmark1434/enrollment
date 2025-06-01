@@ -127,7 +127,7 @@ public ActionResult LoginFaculty(Faculty faculty)
         db.Open();
         using var cmd = db.CreateCommand();
         // Use ILIKE for case-insensitive comparison
-        cmd.CommandText = "SELECT id, username, password, isadmin, isprogramhead FROM faculty WHERE username ILIKE @username";
+        cmd.CommandText = "SELECT id, username, password FROM admin WHERE username ILIKE @username";
         cmd.Parameters.AddWithValue("@username", faculty.Username);
 
         using var reader = cmd.ExecuteReader();
@@ -151,29 +151,17 @@ public ActionResult LoginFaculty(Faculty faculty)
             }, JsonRequestBehavior.AllowGet);
         }
 
-        // Use the correct column names from your database
-        var isAdmin = Convert.ToBoolean(reader["isadmin"]);
-        var isProgHead = Convert.ToBoolean(reader["isprogramhead"]);
-
-        var role = isAdmin ? "Admin" : 
-            isProgHead ? "Program Head" : "Professor";
-
-        var redirectUrl = role switch
-        {
-            "Admin" => Url.Action("Dashboard", "Admin"),
-            "Program Head" => Url.Action("Dashboard", "ProgramHead"),
-            "Professor" => Url.Action("Dashboard", "Teacher"),
-            _ => Url.Action("Index", "Home")
-        };
+      
+        
+        var redirectUrl = @Url.Action("MainAdmin","Admin");
 
         return Json(new
         {
             success = true,
-            message = $"Login successful as {role}",
+            message = $"Login successfully",
             redirectUrl = redirectUrl,
             data = new { 
                 Username = reader["username"].ToString(), 
-                Role = role 
             }
         }, JsonRequestBehavior.AllowGet);
     }
@@ -237,7 +225,7 @@ public ActionResult LoginFaculty(Faculty faculty)
                             {
                                 return Json(new { success = false, message = "Invalid student code or password." }, JsonRequestBehavior.AllowGet);
                             }
-
+                            Session["Stud_Code"] = reader.GetInt32(reader.GetOrdinal("STUD_CODE"));
                             var studentData = new
                             {
                                 Stud_Code = reader.GetInt32(reader.GetOrdinal("STUD_CODE")),

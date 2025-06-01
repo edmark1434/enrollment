@@ -17,7 +17,8 @@ $(document).ready(function () {
             Stud_Contact: $('#contactNo').val(),
             Stud_Email: $('#emailAddress').val(),
             Stud_Address: $('#address').val(),
-            Stud_Password: $('#newPassword').val()
+            Stud_Password: $('#newPassword').val(),
+            
         };
         console.log(student);
         $.ajax({
