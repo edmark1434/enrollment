@@ -205,7 +205,6 @@
     <Compile Include="Controllers\ScheduleController.cs" />
     <Compile Include="Controllers\Service\fetchService.cs" />
     <Compile Include="Controllers\TeacherController.cs" />
-    <Compile Include="Controllers\StudentEnrollmentController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -216,12 +215,13 @@
     <Compile Include="Models\CurrentEnrollment.cs" />
     <Compile Include="Models\CurriculumCourse.cs" />
     <Compile Include="Models\Enrollment.cs" />
+    <Compile Include="Models\EnrollmentViewModel.cs" />
     <Compile Include="Models\Faculty.cs" />
     <Compile Include="Models\Prerequisite.cs" />
     <Compile Include="Models\Professor.cs" />
     <Compile Include="Models\Program.cs" />
     <Compile Include="Models\Room.cs" />
-    <Compile Include="Models\Schedule.cs" />
+    <Compile Include="Models\ScheduleRequest.cs" />
     <Compile Include="Models\Session.cs" />
     <Compile Include="Models\Semester.cs" />
     <Compile Include="Models\Student.cs" />

@@ -65,34 +65,35 @@
     }
 
     function applyFilters() {
-        const selectedProg = $filterProgram.val();
-        const selectedSemester = $('#filterSemester').val();
-        const selectedAY = $filterAY.val();
+        const selectedProg = $('#filterProgram').val(); // can be empty
+        const selectedSemester = $('#filterSemester').val(); // "1", "2" or ""
+        const selectedAY = $('#filterAY').val(); // can be empty
 
         $.get('/CurriculumCourse/GetFilteredCurriculum', {
-            progCode: selectedProg,
-            semester: selectedSemester,
-            ayCode: selectedAY
+            progCode: selectedProg || "",
+            semester: selectedSemester || "",
+            ayCode: selectedAY || ""
         }, function (data) {
             $('#assignedCurriculumTable tbody').empty();
 
             if (!data || data.length === 0) {
-                $('#assignedCurriculumTable tbody').append('<tr><td colspan="5">No matching curriculum found.</td></tr>');
+                $('#assignedCurriculumTable tbody').append(
+                    '<tr><td colspan="5" class="text-center">No matching curriculum found.</td></tr>'
+                );
                 return;
             }
 
             $.each(data, function (i, item) {
                 $('#assignedCurriculumTable tbody').append(`
-                    <tr>
-                        <td>${item.progCode}</td>
-                        <td>${item.crsCode}</td>
-                        <td>${item.curYearLevel}</td>
-                        <td>${item.curSemester}</td>
-                        <td>${item.ayDisplay}</td>
-                    </tr>
-                `);
+                <tr>
+                    <td>${item.progCode}</td>
+                    <td>${item.crsCode}</td>
+                    <td>${item.curYearLevel}</td>
+                    <td>${item.curSemester === 1 ? '1st Semester' : item.curSemester === 2 ? '2nd Semester' : 'Unknown'}</td>
+                    <td>${item.ayDisplay}</td>
+                </tr>
+            `);
             });
-
         }).fail(function () {
             alert('⚠️ Failed to apply filters.');
         });
@@ -101,8 +102,12 @@
     function fetchCourses() {
         const selectedProg = $programSelect.val();
         const selectedYear = $yearLevelSelect.val();
-        const selectedSemester = $semesterSelect.val();
+        const selectedSemester = $semesterSelect.val(); // e.g., "1st Semester"
         const selectedAY = $academicYearSelect.val();
+
+        let semesterValue = 0;
+        if (selectedSemester === "1st Semester") semesterValue = 1;
+        else if (selectedSemester === "2nd Semester") semesterValue = 2;
 
         $availableCoursesList.empty().append('<tr><td colspan="8" class="text-center">Loading courses...</td></tr>');
 
@@ -111,7 +116,7 @@
             $.get('/CurriculumCourse/GetAssignedCourses', {
                 progCode: selectedProg,
                 yearLevel: selectedYear,
-                semester: selectedSemester,
+                semester: semesterValue.toString(), // send as string for compatibility
                 ayCode: selectedAY
             })
         ).done(function (allCoursesRes) {
@@ -166,16 +171,16 @@
     $assignCourseModal.on('show.bs.modal', function () {
         const selectedProg = $programSelect.val();
         const selectedYear = $yearLevelSelect.val();
-        const selectedSemester = $semesterSelect.val();
+        const selectedSemester = parseInt($semesterSelect.val());
         const selectedAY = $academicYearSelect.val();
 
         if (!selectedProg || !selectedYear || !selectedSemester || !selectedAY) {
             alert('Please select Program, Year Level, Semester, and Academic Year.');
             return false;
         }
-
+        var semester_name = selectedSemester === 1 ? "1st Semester" : "2nd Semester";
         $modalProgramName.text(selectedProg);
-        $modalYearSemester.text(`${selectedYear} - ${selectedSemester}`);
+        $modalYearSemester.text(`${selectedYear} - ${semester_name}`);
         $courseSearch.val('');
         fetchCourses();
     });
@@ -200,7 +205,7 @@
     $confirmAssign.on('click', function () {
         const selectedProg = $programSelect.val();
         const selectedYear = $yearLevelSelect.val();
-        const selectedSemester = $semesterSelect.val();
+        const selectedSemester = parseInt($semesterSelect.val()); // e.g., "1st Semester"
         const selectedAY = $academicYearSelect.val();
 
         const selectedCourses = [];
@@ -229,33 +234,28 @@
             data: JSON.stringify(dataToSend),
             success: function (response) {
                 if (response.success) {
-                    swal.fire(
-                        {
-                            title: 'Success!',
-                            text: 'Courses have been assigned.',
-                            icon: 'success',
-                            confirmButtonText: 'OK',
-                            timer: 2000,
-                            timerProgressBar: true,
-                        }
-                    );
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Courses have been assigned.',
+                        icon: 'success',
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
                     $assignCourseModal.modal('hide');
                     loadAssignedCurriculum();
                 } else {
-                    swal.fire({
-                        title: 'Unable to assign courses.',
+                    Swal.fire({
+                        title: 'Warning',
                         text: response.message,
-                        icon: 'warning',
-                        confirmButtonText: 'Try Again'
+                        icon: 'warning'
                     });
                 }
             },
             error: function () {
-                swal.fire({
+                Swal.fire({
                     title: 'Error',
                     text: 'Unable to assign courses.',
-                    icon: 'error',
-                    confirmButtonText: 'Try Again'
+                    icon: 'error'
                 });
             }
         });
@@ -265,7 +265,7 @@
     loadPrograms();
     loadAcademicYears();
     loadAssignedCurriculum();
-
+    applyFilters();
     // Event listeners for filters
     $('#filterProgram, #filterSemester, #filterAY').on('change', applyFilters);
 });

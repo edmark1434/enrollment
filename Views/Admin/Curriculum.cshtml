@@ -1,5 +1,6 @@
 @{
 Layout = "~/Views/Shared/_AdminHeader.cshtml";
+var enrollment = ViewBag.Enrollment as EnrollmentSystem.Models.CurrentEnrollment;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -52,18 +53,13 @@ Layout = "~/Views/Shared/_AdminHeader.cshtml";
                 </select>
             </div>
             <div class="col-md-4">
-                <label for="academicYearSelect" class="form-label">Academic Year:</label>
-                <select class="form-select" id="academicYearSelect" name="academicYearSelect">
-                    <option value="" selected disabled>Choose Academic Year...</option>
-                </select>
+                <label for="academicYearSelectLabel" class="form-label">Academic Year:</label>
+                <input type="text" value="@enrollment.ay_code" class="form-control" id="academicYearSelect" disabled>
+
             </div>
             <div class="col-md-4">
-                <label for="semesterSelect" class="form-label">Semester:</label>
-                <select class="form-select" id="semesterSelect" name="semesterSelect">
-                    <option value="" selected disabled>Choose Semester...</option>
-                    <option value="1st Semester">1st Semester</option>
-                    <option value="2nd Semester">2nd Semester</option>
-                </select>
+                <label for="semesterSelectLabel" class="form-label">Semester:</label>
+                <input type="text" value="@(enrollment?.sem_id == 1 ? "1st Semester" : "2nd Semester")" class="form-control" id="semesterSelect" disabled>
             </div>
             <div class="col-md-4">
                 <label for="yearLevelSelect" class="form-label">Year Level:</label>
@@ -96,8 +92,8 @@ Layout = "~/Views/Shared/_AdminHeader.cshtml";
                 <label for="filterSemester" class="form-label">Filter by Semester:</label>
                 <select class="form-select" id="filterSemester">
                     <option value="">All Semesters</option>
-                    <option value="1st Semester">1st Semester</option>
-                    <option value="2nd Semester">2nd Semester</option>
+                    <option value="1">1st Semester</option>
+                    <option value="2">2nd Semester</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -152,7 +148,7 @@ Layout = "~/Views/Shared/_AdminHeader.cshtml";
                     <table class="table">
                         <thead>
                         <tr>
-                            <th><input type="checkbox" id="toggleAll"></th>
+                            <th>Select</th>
                             <th>Course Code</th>
                             <th>Title</th>
                             <th>Category</th>

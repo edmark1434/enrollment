@@ -2,7 +2,7 @@
 @{
     Layout = null;
     ViewBag.Title = "Student Sign Up - University Enrollment System";
-    var programs = ViewBag.Programs as List<EnrollmentSystem.Models.Program>;
+    var programs = ViewBag.Program as List<EnrollmentSystem.Models.Program>;
 }
 
 <!DOCTYPE html>
@@ -224,10 +224,12 @@
         </div>
         <div class="row mb-3">
             <div class="col-md-12">
-                <select id="program">
-                    @foreach (var prog  in programs)
+                @Html.Label("programLabel", "Program:", new { @class = "form-label" })
+                <select id="program" class="form-select">
+                    <option value="" disabled>Select Program</option>
+                    @foreach (var prog in programs)
                     {
-                        <option id="@prog.ProgCode">@prog.ProgTitle</option>
+                        <option value="@prog.ProgCode">@prog.ProgTitle</option>
                     }
                 </select>
                 <div class="invalid-feedback">

@@ -1,47 +1,46 @@
+@{
+    Layout = "~/Views/Shared/_AdminHeader.cshtml";
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="@Url.Content("~/Content/edmark.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/bootstrap.min.css")">
+    <meta charset="UTF-8"/>
     <title>Schedule Management</title>
     <style>
-        /* Basic Reset */
+        /* Your existing CSS remains unchanged */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
         }
-
         body {
             background-color: #f9f9f9;
             padding: 20px;
         }
-
         h1 {
             text-align: center;
             margin-bottom: 20px;
             color: #333;
         }
-
         .container {
             max-width: 1200px;
             margin: auto;
         }
-
         .card {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             padding: 20px;
         }
-
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-
         .btn {
             background: #007BFF;
             color: white;
@@ -52,48 +51,38 @@
             font-weight: bold;
             transition: background 0.3s ease;
         }
-
         .btn:hover {
             background: #0056b3;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
         }
-
         th, td {
             padding: 12px;
             border: 1px solid #ddd;
             text-align: left;
         }
-
         th {
             background: #f2f2f2;
         }
-
         tr:nth-child(even) {
             background: #fafafa;
         }
-
         .actions button {
             margin-right: 5px;
             background: #28a745;
         }
-
         .actions button:hover {
             background: #1e7e34;
         }
-
         .actions button:last-child {
             background: #dc3545;
         }
-
         .actions button:last-child:hover {
             background: #c82333;
         }
-
         /* Modal Styles */
         .modal {
             position: fixed;
@@ -107,11 +96,9 @@
             align-items: center;
             z-index: 1000;
         }
-
         .modal.active {
             display: flex;
         }
-
         .modal-content {
             background: white;
             padding: 20px;
@@ -119,8 +106,9 @@
             width: 100%;
             max-width: 600px;
             position: relative;
+            max-height: 90vh;      /* New */
+            overflow-y: auto;      /* New */
         }
-
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -129,33 +117,27 @@
             border-bottom: 1px solid #ccc;
             padding-bottom: 10px;
         }
-
         .modal-title {
             font-size: 18px;
             font-weight: bold;
         }
-
         .close-btn {
             cursor: pointer;
             font-size: 24px;
             font-weight: bold;
             color: #888;
         }
-
         .close-btn:hover {
             color: #333;
         }
-
         .form-group {
             margin-bottom: 15px;
         }
-
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
         }
-
         select,
         input[type="time"],
         input[type="text"] {
@@ -164,52 +146,47 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-
         .day-time-group {
             display: flex;
             gap: 10px;
             margin-bottom: 10px;
             align-items: center;
         }
-
         .remove-day-time {
             color: red;
             cursor: pointer;
             font-weight: bold;
         }
-
         .footer-buttons {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
             margin-top: 10px;
         }
-
         .footer-buttons button {
             padding: 8px 15px;
         }
-
         /* Filter Section */
         .filters {
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            flex-direction: row;   /* Horizontal layout */
+            flex-wrap: wrap;       /* Allow wrapping on smaller screens */
+            gap: 10px;             /* Space between items */
+            align-items: center;   /* Align items vertically */
             margin-bottom: 20px;
         }
 
-        .filters select {
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-
+        .filters select,
         .filters button {
             padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            flex: 0 0 auto;         /* Prevent auto-growing and shrinking */
         }
+
     </style>
 </head>
 <body>
-
 <div class="container">
     <h1>Schedule Management</h1>
     <div class="card">
@@ -217,15 +194,14 @@
             <h2>Schedules</h2>
             <button class="btn" onclick="openModal('add')">+ Add New Schedule</button>
         </div>
-
         <!-- Filter Section -->
         <div class="filters">
             <select id="academicYearFilter">
                 <option value="">Year Level</option>
-                <option value="1">1st Year</option>
-                <option value="2">2nd year</option>
-                <option value="3">3rd year</option>
-                <option value="4">4th year</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd year</option>
+                <option value="3rd Year">3rd year</option>
+                <option value="4th Year">4th year</option>
             </select>
             <select id="programFilter">
                 <option value="">All Programs</option>
@@ -246,34 +222,21 @@
             <button class="btn" id="filterButton">Apply Filters</button>
             <button class="btn" id="resetFilterButton">Reset</button>
         </div>
-
         <!-- Table -->
         <table id="scheduleTable">
             <thead>
-                <tr>
-                    <th>MIS Code</th>
-                    <th>Course</th>
-                    <th>Day</th>
-                    <th>Time</th>
-                    <th>Room</th>
-                    <th>Professor</th>
-                    <th>Section</th>
-                </tr>
+            <tr>
+                <th>MIS Code</th>
+                <th>Course</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Room</th>
+                <th>Professor</th>
+                <th>Section</th>
+            </tr>
             </thead>
             <tbody id="scheduleBody">
-                <tr data-id="MIS101">
-                    <td>MIS101</td>
-                    <td data-crs="PF101" data-days='["Monday"]' data-starts='["09:00"]' data-ends='["10:30"]'>Programming Fundamentals (PF101)</td>
-                    <td>Monday</td>
-                    <td>09:00 - 10:30</td>
-                    <td>R101</td>
-                    <td>Dr. John Doe</td>
-                    <td>CS-1A</td>
-                    <td class="actions">
-                        <button class="edit-schedule btn btn-sm btn-primary">Edit</button>
-                        <button class="delete-schedule btn btn-sm btn-danger">Delete</button>
-                    </td>
-                </tr>
+            <!-- Schedules will be loaded here -->
             </tbody>
         </table>
     </div>
@@ -287,17 +250,8 @@
             <span class="close-btn" id="closeModalBtn">&times;</span>
         </div>
         <form id="scheduleForm">
-            
             <div class="form-group">
-                <label for="course">Course</label>
-                <select id="course" required>
-                    <option value="">Select Course</option>
-                    <option value="PF101">PF101 - Programming Fundamentals</option>
-                    <option value="DS102">DS102 - Data Structures</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="course">Program</label>
+                <label for="programLabel">Program</label>
                 <select id="program" required>
                     <option value="">Select Program</option>
                     <option value="BSIT">BSIT - Bachelor of Science in Information Technology</option>
@@ -305,7 +259,15 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="professor">Professor</label>
+                <label for="courseLabel">Course</label>
+                <select id="course" required>
+                    <option value="">Select Course</option>
+                    <option value="PF101">PF101 - Programming Fundamentals</option>
+                    <option value="DS102">DS102 - Data Structures</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="professorLabel">Professor</label>
                 <select id="professor" required>
                     <option value="">Select Professor</option>
                     <option value="Dr. John Doe">Dr. John Doe</option>
@@ -317,21 +279,20 @@
                 <div id="dayTimeContainer"></div>
                 <button type="button" class="btn" id="addAnotherDayTime">+ Add Another Day/Time</button>
             </div>
+            <!-- Total Hours Display -->
             <div class="form-group">
-                <label for="room">Room</label>
+                <strong>Total Time:</strong> <span id="totalHoursDisplay">0.00 hrs</span>
+            </div>
+            <div class="form-group">
+                <label for="roomLable">Room</label>
                 <select id="room" required>
                     <option value="">Select Room</option>
-                    <option value="R101">R101</option>
-                    <option value="R102">R102</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="section">Section</label>
+                <label for="sectionLabel">Section</label>
                 <select id="section" required>
                     <option value="">Select Section</option>
-                    <option value="CS-1A">CS-1A</option>
-                    <option value="CS-1B">CS-1B</option>
-                    <option value="EE-1A">EE-1A</option>
                 </select>
             </div>
             <div class="footer-buttons">
@@ -342,27 +303,107 @@
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
+    let allSchedules = [];
+    var totalUnits = 0;
+    var totalHours = 0;
+    $(document).ready(function () {
+        var programFilter= $('#programFilter');
+        $.ajax({
+            url: '/fetch/program',
+            method: 'GET',
+            success: function (data) {
+                programFilter.empty();
+                programFilter.append('<option value="">All Programs</option>');
+                data.program.forEach(function (program) {
+                    programFilter.append(`<option value="${program.ProgCode}">${program.ProgTitle}</option>`);
+                });
+            },
+            error: function(xhr) {
+                console.error('Error fetching programs:', xhr);
+            }
+        });
+        var program1 = $('#program');
+        $.ajax({
+            url: '/fetch/program',
+            method: 'GET',
+            success: function (data) {
+                program1.empty();
+                program1.append('<option value="">All Programs</option>');
+                data.program.forEach(function (item) {
+                    program1.append(`<option value="${item.ProgCode}">${item.ProgTitle}</option>`);
+                });
+            },
+            error: function(xhr) {
+                console.error('Error fetching programs:', xhr);
+            }
+        });
+        getAllSched();
+    });
+    function getAllSched(){
+        $.get('/Schedule/GetAllSchedules', function (data) {
+            allSchedules = data;
+            loadAndRenderSchedule(data);
+        }).fail(function (xhr) {
+            alert("Failed to load schedules.");
+            console.error("Error fetching schedules:", xhr);
+        });
+    }
+    $('#programFilter,#academicYearFilter').on('change', function () {
+        var programFilter= $('#programFilter').val();
+        var sectionFilter= $('#sectionFilter');
+        var yearLevelFilter= $('#academicYearFilter').val();
+        $.ajax({
+            url: '/fetch/sectionProgram',
+            method: 'GET',
+            data : { program : programFilter,
+                yr_level : yearLevelFilter },
+            success : function(response){
+                sectionFilter.empty();
+                sectionFilter.append('<option value="">All Sections</option>');
+                response.section.forEach(function (section) {
+                    sectionFilter.append(`<option value="${section.BlkSecId}">${section.BlkSecCode}</option>`)
+                });
+            },
+            error : function(xhr) {
+                console.error('Error fetching programs:', xhr);
+            }
+        });
+    });
+
+    $('#filterButton').on('click', function () {
+        const yearFilter = $('#academicYearFilter').val()?.toLowerCase();
+        const programFilter = $('#programFilter').val()?.toLowerCase();
+        const sectionFilter = $('#sectionFilter').val()?.toLowerCase();
+        const semesterFilter = $('#semesterFilter').val()?.toLowerCase();
+
+        const filtered = allSchedules.filter(schedule => {
+            const matchesYear = !yearFilter || schedule.YearLevel?.toLowerCase().includes(yearFilter);
+            const matchesProgram = !programFilter || schedule.Program?.toLowerCase().includes(programFilter);
+            const matchesSection = !sectionFilter || schedule.SectionName?.toLowerCase().includes(sectionFilter);
+            const matchesSemester = !semesterFilter || schedule.Semester?.toString() === semesterFilter;
+
+            return matchesYear && matchesProgram && matchesSection && matchesSemester;
+        });
+
+        loadAndRenderSchedule(filtered); // Re-render table with filtered results
+    });
     const scheduleBody = $('#scheduleBody');
     let editingRow = null;
 
-    // Format time to AM/PM
-    function formatTime(time) {
-        let [hours, minutes] = time.split(":");
-        hours = parseInt(hours);
-        const period = hours >= 12 ? "PM" : "AM";
-        hours = hours % 12 || 12;
-        return `${hours}:${minutes} ${period}`;
-    }
-
-    // Group by time slots
     function formatDayTime(details) {
+        if (!details || !Array.isArray(details)) return "";
+
         const timeGroups = {};
+
         details.forEach(detail => {
             const key = `${detail.startTime}-${detail.endTime}`;
+            const day = detail.day || "N/A";
+
             if (!timeGroups[key]) timeGroups[key] = [];
-            timeGroups[key].push(detail.day);
+            timeGroups[key].push(day);
         });
 
         return Object.entries(timeGroups).map(([key, days]) => {
@@ -371,88 +412,49 @@
         }).join(" / ");
     }
 
-    // Load sample data into table
-    function loadAndRenderSchedule() {
-        const testData = [
-            {
-                misCode: "MIS102",
-                course: "DS102",
-                courseName: "Data Structures",
-                room: "R102",
-                professor: "Dr. Sarah Lee",
-                section: "CS-1B",
-                day: "Wednesday",
-                startTime: "13:00",
-                endTime: "14:30"
-            },
-            {
-                misCode: "MIS102",
-                course: "DS102",
-                courseName: "Data Structures",
-                room: "R102",
-                professor: "Dr. Sarah Lee",
-                section: "CS-1B",
-                day: "Friday",
-                startTime: "15:00",
-                endTime: "16:30"
-            }
-        ];
+    function formatTime(timeStr) {
+        if (!timeStr) return "";
 
-        const grouped = groupSchedules(testData);
-        scheduleBody.empty();
-
-        $.each(grouped, function (_, schedule) {
-            const dayTimeDisplay = formatDayTime(schedule.scheduleDetails);
-            const row = $(
-                `<tr data-id="${schedule.misCode}">
-                    <td>${schedule.misCode}</td>
-                    <td data-crs="${schedule.course}" 
-                        data-days='${JSON.stringify(schedule.scheduleDetails.map(d => d.day))}'
-                        data-starts='${JSON.stringify(schedule.scheduleDetails.map(d => d.startTime))}'
-                        data-ends='${JSON.stringify(schedule.scheduleDetails.map(d => d.endTime))}'>
-                        ${schedule.courseName} (${schedule.course})
-                    </td>
-                    <td>${schedule.scheduleDetails.map(d => d.day).join(", ")}</td>
-                    <td>${dayTimeDisplay}</td>
-                    <td>${schedule.room}</td>
-                    <td>${schedule.professor}</td>
-                    <td>${schedule.section}</td>
-                </tr>`
-            );
-            scheduleBody.append(row);
-        });
+        let [hours, minutes] = timeStr.split(":").slice(0, 2);
+        hours = parseInt(hours);
+        const period = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12 || 12;
+        return `${hours}:${minutes} ${period}`;
+    }
+    function parseTime(timeStr) {
+        const [h, m] = timeStr.split(':').map(Number);
+        return new Date(1970, 0, 1, h, m).getTime();
     }
 
-    // Group schedules by misCode
-    function groupSchedules(schedules) {
-        const grouped = {};
-        schedules.forEach(schedule => {
-            if (!grouped[schedule.misCode]) {
-                grouped[schedule.misCode] = {
-                    misCode: schedule.misCode,
-                    course: schedule.course,
-                    courseName: schedule.courseName,
-                    room: schedule.room,
-                    professor: schedule.professor,
-                    section: schedule.section,
-                    scheduleDetails: []
-                };
+    function getTotalHours(entries) {
+        let totalMinutes = 0;
+        entries.forEach(entry => {
+            const start = parseTime(entry.start);
+            const end = parseTime(entry.end);
+            if (!isNaN(start) && !isNaN(end) && end > start) {
+                totalMinutes += (end - start) / (1000 * 60); // convert ms to minutes
             }
-            grouped[schedule.misCode].scheduleDetails.push({
-                day: schedule.day,
-                startTime: schedule.startTime,
-                endTime: schedule.endTime
-            });
         });
-        return Object.values(grouped);
+        return (totalMinutes / 60).toFixed(2); // convert to hours
     }
 
-    // Open modal
+    function updateTotalHours() {
+        const entries = [];
+        $('.day-time-group').each(function () {
+            const start = $(this).find('.start-input').val();
+            const end = $(this).find('.end-input').val();
+            if (start && end) {
+                entries.push({ start, end });
+            }
+        });
+        totalHours = getTotalHours(entries);
+        $('#totalHoursDisplay').text(`${totalHours} hrs / ${totalUnits} hrs`);
+    }
+
     function openModal(mode, row = null) {
         $('#modal').addClass('active');
         editingRow = row;
         $('#modalTitle').text(mode === "add" ? "Add New Schedule" : "Edit Schedule");
-
         $('#scheduleForm')[0].reset();
         $('#dayTimeContainer').html(`
             <div class="day-time-group">
@@ -471,7 +473,30 @@
                 <span class="remove-day-time">×</span>
             </div>
         `);
+        updateTotalHours();
 
+        $('#program').on('change', function () {
+            const selectedProgram = $(this).val();
+            $('#course').empty().append(`<option value="">Select Course</option>`);
+            $('#professor').empty().append(`<option value="">Select Professor</option>`);
+            $('#room').empty().append(`<option value="">Select Room</option>`);
+            $('#section').empty().append(`<option value="">Select Section</option>`);
+            if (selectedProgram) {
+                fetchProgramData(selectedProgram);
+            }
+        });
+
+        // Event listeners for dynamic time updates
+        $('#dayTimeContainer').on('change', '.start-input, .end-input', updateTotalHours);
+        $('#dayTimeContainer').on('click', '.remove-day-time', function () {
+            if ($('.day-time-group').length > 1) {
+                $(this).closest('.day-time-group').remove();
+                updateTotalHours();
+            } else {
+                alert("At least one day/time is required.");
+            }
+        });
+     
         if (mode === "edit" && row) {
             const cells = $(row).find("td");
             $('#course').val($(cells[1]).data('crs'));
@@ -482,8 +507,8 @@
             const days = JSON.parse($(cells[1]).data('days') || '[""]');
             const starts = JSON.parse($(cells[1]).data('starts') || '[""]');
             const ends = JSON.parse($(cells[1]).data('ends') || '[""]');
-            $('#dayTimeContainer').empty();
 
+            $('#dayTimeContainer').empty();
             days.forEach((day, i) => {
                 const group = $(
                     `<div class="day-time-group">
@@ -504,7 +529,49 @@
                 );
                 $('#dayTimeContainer').append(group);
             });
+            updateTotalHours();
         }
+    }
+
+    function fetchProgramData(programCode) {
+        $.getJSON(`/fetch/CoursesByProg?program=${programCode}`, function (data) {
+            const $course = $('#course');
+            $course.empty().append(`<option value="">Select Course</option>`);
+            data.courses.forEach(course => {
+                $course.append(`<option value="${course.Crs_Code}" data-totalunits="${(course.Crs_Lec + course.Crs_Lab).toFixed(2)}">${course.Crs_Code} - ${course.Crs_Title}</option>`);
+            });
+        });
+
+        $.getJSON(`/fetch/Professors?program=${programCode}`, function (data) {
+            const $professor = $('#professor');
+            $professor.empty().append(`<option value="">Select Professor</option>`);
+            data.professors.forEach(p => {
+                $professor.append(`<option value="${p.prof_id}">${p.prof_name}</option>`);
+            });
+        });
+
+        $.getJSON(`/fetch/RoomsByProg?program=${programCode}`, function (data) {
+            const $room = $('#room');
+            $room.empty().append(`<option value="">Select Room</option>`);
+            data.rooms.forEach(r => {
+                $room.append(`<option value="${r.room_id}">${r.room_code}</option>`);
+            });
+        });
+
+        $('#course').off('change').on('change', function () {
+            const courseCode = $(this).val();
+            if (!courseCode) return;
+            $.getJSON(`/fetch/BlockSections?program=${programCode}&crs_code=${courseCode}`, function (data) {
+                const $section = $('#section');
+                $section.empty().append(`<option value="">Select Section</option>`);
+                data.sections.forEach(s => {
+                    $section.append(`<option value="${s.BlkSecId}">${s.BlkSecCode}</option>`);
+                });
+            });
+            const selectedOption = $(this).find("option:selected");
+            totalUnits = selectedOption.data('totalunits') || 0;
+            updateTotalHours(); // Recalculate total hours
+        });
     }
 
     function closeModal() {
@@ -533,25 +600,17 @@
             </div>`
         );
         $('#dayTimeContainer').append(group);
-    });
-
-    $('#dayTimeContainer').on('click', '.remove-day-time', function () {
-        if ($('.day-time-group').length > 1) {
-            $(this).closest('.day-time-group').remove();
-        } else {
-            alert("At least one day/time is required.");
-        }
+        $('#dayTimeContainer').on('change', '.start-input, .end-input', updateTotalHours);
     });
 
     $('#scheduleForm').on('submit', function (e) {
         e.preventDefault();
-
+        const misCode = editingRow ? $(editingRow).data('id') : 'MIS' + Math.floor(Math.random() * 1000);
         const course = $('#course').val();
         const program = $('#program').val();
-        const professor = $('#professor').val();
-        const room = $('#room').val();
-        const section = $('#section').val();
-
+        const professor = parseInt($('#professor').val()) || 0;
+        const room = parseInt($('#room').val()) || 0;
+        const section = parseInt($('#section').val()) || 0;
         const days = [], starts = [], ends = [];
 
         $('.day-time-group').each(function () {
@@ -564,31 +623,51 @@
                 ends.push(end);
             }
         });
+        if(totalHours > totalUnits || totalHours < totalUnits){
+            alert("The selected hours must meet the required hours for this course. Please ensure the total hours match the course's requirements.");
+            return;
+        }
+        if (!course || !section || !room || days.length === 0) {
+            alert("Please fill all required fields.");
+            return;
+        }
+        
+        const scheduleDetails = days.map((day, i) => ({
+            day,
+            startTime: starts[i],
+            endTime: ends[i]
+        }));
+
         const data = {
-            misCode: editingRow ? $(editingRow).data('id') : 'MIS' + Math.floor(Math.random() * 1000),
-            course,
-            professor,
-            room,
-            section,
-            scheduleDetails
+            MisCode: misCode,
+            Course: course,
+            ProfId: professor,
+            RoomId: room,
+            Section: section,
+            ScheduleDetails: scheduleDetails
         };
 
-        console.log("Data to send:", data);
-
-        // 🔁 Replace this URL with your actual API endpoint
-        $.post('/api/schedules', data)
+        console.log("Data being sent:", data);
+        $.post('/schedule/SaveSchedule', data)
             .done(function (response) {
-                alert("Schedule saved successfully!");
-                closeModal();
-                loadAndRenderSchedule(); // Reload schedules from server or update table
+                alert(response.message);
+                getAllSched();
+                if (response.success) {
+                    closeModal();
+                }
             })
             .fail(function (xhr, status, error) {
-                alert("Failed to save schedule.");
+                const response = xhr.responseJSON || { message: "Unknown error occurred." };
+                alert(response.message);
                 console.error("Error saving schedule:", error);
             });
     });
-    
 
+    $('#resetFilterButton').on('click', function () {
+        $('#academicYearFilter, #programFilter, #sectionFilter, #semesterFilter').val('');
+        loadAndRenderSchedule(allSchedules);
+        $('#scheduleBody tr').show();
+    });
     $('#filterButton').on('click', function () {
         const year = $('#academicYearFilter').val().toLowerCase();
         const program = $('#programFilter').val().toLowerCase();
@@ -596,25 +675,97 @@
         const semester = $('#semesterFilter').val().toLowerCase();
 
         $('#scheduleBody tr').each(function () {
-            const cells = $(this).find("td");
-            const show =
-                (!year || cells.eq(1).text().toLowerCase().includes(year)) &&
-                (!program || cells.eq(1).text().toLowerCase().includes(program)) &&
-                (!section || cells.eq(6).text().toLowerCase().includes(section)) &&
-                (!semester || true); // Simulated
-            $(this).toggle(show);
+            const $tr = $(this);
+
+            const courseCell = $tr.find("td:eq(1)");
+            const misCode = $tr.data("id");
+            const crsCode = courseCell.data("crs");
+            const days = JSON.parse(courseCell.data("days"));
+            const starts = JSON.parse(courseCell.data("starts"));
+            const ends = JSON.parse(courseCell.data("ends"));
+
+            // Get yr_level, prog_code, semester from each schedule entry (from test data or API)
+            const yrLevelMatch = !year || starts.some((_, i) => {
+                const yr = $(this).data("year")?.toString().toLowerCase() ?? "";
+                return !year || yr.includes(year);
+            });
+
+            const progMatch = !program || $(this).find("td:eq(1)").data("prog")?.toString().toLowerCase().includes(program);
+            const secMatch = !section || $(this).find("td:eq(6)").text().toLowerCase().includes(section);
+            const semMatch = !semester || $(this).find("td:eq(3)").text().toLowerCase().includes(semester);
+
+            $tr.toggle(yrLevelMatch && progMatch && secMatch && semMatch);
         });
     });
+    function loadAndRenderSchedule(data = []) {
+        const grouped = groupSchedules(data);
 
-    $('#resetFilterButton').on('click', function () {
-        $('#academicYearFilter, #programFilter, #sectionFilter, #semesterFilter').val('');
-        $('#scheduleBody tr').show();
-    });
+        $('#scheduleBody').empty();
+
+        grouped.forEach(schedule => {
+            const dayTimeDisplay = formatDayTime(schedule.scheduleDetails);
+            const days = schedule.scheduleDetails.map(d => d.day).join(", ");
+
+            const row = `
+            <tr data-id="${schedule.MisCode}">
+                <td>${schedule.MisCode}</td>
+                <td data-crs="${schedule.Course}"
+                    data-days='${JSON.stringify(schedule.scheduleDetails.map(d => d.day))}'
+                    data-starts='${JSON.stringify(schedule.scheduleDetails.map(d => d.startTime))}'
+                    data-ends='${JSON.stringify(schedule.scheduleDetails.map(d => d.endTime))}'
+                    data-prog="${schedule.Program}"
+                    data-year="${schedule.YearLevel}"
+                    data-sem="${schedule.Semester}">
+                    ${schedule.courseName || schedule.Course}
+                </td>
+                <td>${days}</td>
+                <td>${dayTimeDisplay}</td>
+                <td>${schedule.Room || "-"}</td>
+                <td>${schedule.Professor || "-"}</td>
+                <td>${schedule.Section || "-"}</td>
+            </tr>
+        `;
+
+            $('#scheduleBody').append(row);
+        });
+    }
+
+    function groupSchedules(schedules) {
+        const grouped = {};
+
+        schedules.forEach(schedule => {
+            const misCode = schedule.MisCode;
+
+            if (!grouped[misCode]) {
+                grouped[misCode] = {
+                    MisCode: misCode,
+                    Course: schedule.Course,
+                    courseName: schedule.courseName || schedule.Course,
+                    Room: schedule.RoomName,
+                    Professor: schedule.ProfessorName || schedule.ProfId,
+                    Section: schedule.SectionName,
+                    Program: schedule.Program,
+                    YearLevel: schedule.YearLevel,
+                    Semester: schedule.Semester,
+                    scheduleDetails: []
+                };
+            }
+
+            if (schedule.Day && schedule.StartTime && schedule.EndTime) {
+                grouped[misCode].scheduleDetails.push({
+                    day: schedule.Day,
+                    startTime: schedule.StartTime,
+                    endTime: schedule.EndTime
+                });
+            }
+        });
+
+        return Object.values(grouped);
+    }
 
     $(function () {
         loadAndRenderSchedule();
     });
 </script>
-
 </body>
 </html>

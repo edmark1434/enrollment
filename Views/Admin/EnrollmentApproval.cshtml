@@ -1,8 +1,354 @@
-﻿@model 
-
+﻿@model List<EnrollmentSystem.Models.EnrollmentViewModel>
 @{
-    ViewBag.Title = "title";
-    Layout = "_Layout";
+Layout = "~/Views/Shared/_AdminHeader.cshtml";
+var program = ViewBag.Program as List<EnrollmentSystem.Models.Program>;
 }
 
-<h2>title</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Enrollment Approval</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"  rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-row {
+            margin-bottom: 20px;
+        }
+
+        table td, table th {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-4">
+    <h2 class="mb-4">Enrollment Approval Dashboard</h2>
+
+    <!-- Filter Controls -->
+    <div class="row filter-row">
+        <div class="col-md-3">
+            <select id="filterProgram" class="form-select">
+                <option value="">All Programs</option>
+                @foreach (var prog in program)
+                {
+                    <option value="@prog.ProgCode">@prog.ProgTitle</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select id="filterYearLevel" class="form-select">
+                <option value="">All Year Levels</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select id="filterSemester" class="form-select">
+                <option value="">All Semesters</option>
+                <option value="1">1st Semester</option>
+                <option value="2">2nd Semester</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-3" id="enrollmentTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">Pending</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab">Approved</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab">Rejected</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="enrollmentTabContent">
+        <div class="tab-pane fade show active" id="pending" role="tabpanel">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Student Code</th>
+                    <th>Student Name</th>
+                    <th>Status</th>
+                    <th>Date Enrolled</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="pendingTable"></tbody>
+            </table>
+        </div>
+
+        <div class="tab-pane fade" id="approved" role="tabpanel">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Student Code</th>
+                    <th>Student Name</th>
+                    <th>Status</th>
+                    <th>Date Enrolled</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="approvedTable"></tbody>
+            </table>
+        </div>
+
+        <div class="tab-pane fade" id="rejected" role="tabpanel">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Student Code</th>
+                    <th>Student Name</th>
+                    <th>Status</th>
+                    <th>Date Enrolled</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="rejectedTable"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Schedule -->
+<div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="scheduleModalLabel">Student Schedule</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered" id="scheduleDetailsContainer">
+                    <thead>
+                    <tr>
+                        <th>MIS CODE</th>
+                        <th>COURSE NAME</th>
+                        <th>DAYS</th>
+                        <th>TIME</th>
+                        <th>ROOM</th>
+                        <th>PROFESSOR</th>
+                        <th>SECTION</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS Bundle (includes Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let currentAY = "";
+    let currentSem = "";
+
+    function loadEnrollments() {
+        $.get('/fetch/GetAllEnrollments', function (data) {
+            const pending = applyFilters(data.filter(e => e.EnrollStatus === "Pending"));
+            const approved = applyFilters(data.filter(e => e.EnrollStatus === "Approved"));
+            const rejected = applyFilters(data.filter(e => e.EnrollStatus === "Rejected"));
+
+            renderTable('#pendingTable', pending);
+            renderTable('#approvedTable', approved);
+            renderTable('#rejectedTable', rejected);
+        });
+    }
+    function applyFilters(data) {
+        const selectedProg = $('#filterProgram').val(); // Program filter
+        const selectedYearLevel = $('#filterYearLevel').val(); // Year Level
+        const selectedSemester = $('#filterSemester').val(); // Semester
+
+        let filteredData = [...data]; // Make a copy of full data
+
+        if (selectedProg) {
+            filteredData = filteredData.filter(e => e.ProgCode === selectedProg);
+        }
+
+        if (selectedYearLevel) {
+            filteredData = filteredData.filter(e => e.EnrollYrLevel === selectedYearLevel);
+        }
+
+        if (selectedSemester && selectedSemester !== "") {
+            const semInt = parseInt(selectedSemester);
+            filteredData = filteredData.filter(e => e.SemId === semInt);
+        }
+
+        return filteredData;
+    }
+    function renderTable(selector, data) {
+        const includeApprovalButtons = !selector.includes("approve") && !selector.includes("rejected");
+
+        $(selector).empty();
+        if (!data.length) {
+            $(selector).append('<tr><td colspan="5">No records found.</td></tr>');
+            return;
+        }
+
+        data.forEach(e => {
+            const enrollDate = new Date(e.EnrollDate);
+            const formattedDate = isNaN(enrollDate.getTime()) ? "-" : enrollDate.toLocaleDateString();
+
+            let actionButtons = `
+            <button class="btn btn-sm btn-info view-schedule"
+                    data-miscode="${e.MisCode}"
+                    data-studcode="${e.StudCode}">
+                View Schedule
+            </button>`;
+
+            if (includeApprovalButtons) {
+                actionButtons += `
+                <button class="btn btn-sm btn-success approve-btn"
+                        data-miscode="${e.MisCode}"
+                        data-studcode="${e.StudCode}"
+                        data-status="Approved">
+                    Approve
+                </button>
+                <button class="btn btn-sm btn-danger reject-btn"
+                        data-miscode="${e.MisCode}"
+                        data-studcode="${e.StudCode}"
+                        data-status="Rejected">
+                    Reject
+                </button>`;
+            }
+
+            $(selector).append(`
+            <tr>
+                <td>${e.StudCode}</td>
+                <td>${e.StudName || "-"}</td>
+                <td>${e.EnrollStatus}</td>
+                <td>${formattedDate}</td>
+                <td>${actionButtons}</td>
+            </tr>
+        `);
+        });
+    }
+    function convertTo12Hour(time24) {
+        const [hourStr, minute] = time24.split(':');
+        let hour = parseInt(hourStr);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        hour = hour % 12 || 12;
+        return `${hour}:${minute} ${ampm}`;
+    }
+    // Handle View Schedule Click
+    $(document).on('click', '.view-schedule', function () {
+        const studCode = $(this).data("studcode");
+
+        const $container = $('#scheduleDetailsContainer tbody');
+        $container.empty().append('<tr><td colspan="6">Loading...</td></tr>');
+
+        $.get(`/fetch/GetAllSchedulesByStudent?studCode=${studCode}`, function (data) {
+            $container.empty();
+
+            if (!data || data.length === 0) {
+                $container.append('<tr><td colspan="6">No schedule found.</td></tr>');
+                return;
+            }
+
+            // Group by course
+            const grouped = {};
+
+            data.forEach(s => {
+                const key = `${s.crs_code}-${s.course_name}`;
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        misCode: s.misCode, 
+                        courseName: s.course_name,
+                        courseCode: s.crs_code,
+                        room: s.room_code,
+                        professor: s.prof_name,
+                        section: s.section_code || "-",
+                        days: [],
+                        times: []
+                    };
+                }
+
+                grouped[key].days.push(s.day);
+                grouped[key].times.push(`${s.start_time} - ${s.end_time}`);
+            });
+    
+            // Render rows
+            Object.values(grouped).forEach(course => {
+                const uniqueDays = [...new Set(course.days)].join(", ");
+                const timeSlots = [...new Set(course.times)].map(t => {
+                    const [start, end] = t.split(' - ');
+                    return `${convertTo12Hour(start)} - ${convertTo12Hour(end)}`;
+                }).join(" / ");
+
+                $container.append(`
+                <tr>
+                    <td>${course.misCode}</td>
+                    <td>${course.courseName} (${course.courseCode})</td>
+                    <td>${uniqueDays}</td>
+                    <td>${timeSlots}</td>
+                    <td>${course.room}</td>
+                    <td>${course.professor}</td>
+                    <td>${course.section}</td>
+                </tr>
+            `);
+            });
+
+        }).fail(() => {
+            $container.html('<tr><td colspan="6" class="text-danger">Failed to load schedule.</td></tr>');
+        });
+
+        $('#scheduleModal').modal('show');
+    });
+
+    // Approve / Reject logic
+    $(document).on('click', '.approve-btn, .reject-btn', function () {
+        const studCode = $(this).data("studcode");
+        const status = $(this).data("status");
+        console.log(studCode);
+        Swal.fire({
+            title: `Are you sure?`,
+            text: `This will mark all enrollments for this student as "${status}".`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: `Yes, ${status.toLowerCase()} it!`
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post('/fetch/UpdateEnrollmentStatus', {
+                    StudCode: studCode,
+                    Status: status
+                }, function (response) {
+                    if (response.success) {
+                        Swal.fire("Success", `Enrollment ${status} successfully`, "success")
+                            .then(() => location.reload());
+                    } else {
+                        Swal.fire("Error", "Failed to update enrollment.", "error");
+                    }
+                });
+            }
+        });
+    });
+    // Trigger filter on change of any filter dropdown
+    $('#filterProgram, #filterYearLevel, #filterSemester').on('change', function () {
+        loadEnrollments();
+    });
+
+    // Load all enrollments on page ready
+    $(document).ready(function () {
+        loadEnrollments();
+    });
+</script>
+
+</body>
+</html>

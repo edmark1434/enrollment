@@ -1,52 +1,44 @@
 ﻿@{
-    Layout = "~/Views/Shared/_AdminHeader.cshtml";
-    var academicYear = ViewBag.AcademicYears as List<EnrollmentSystem.Models.AcademicYear>;
-    var programs = ViewBag.Programs as List<EnrollmentSystem.Models.Program>;
-    var semester = ViewBag.Semester as List<EnrollmentSystem.Models.Semester>;
-    var enrollment = ViewBag.CurrentEnrollement as EnrollmentSystem.Models.CurrentEnrollment;
-    var rooms = ViewBag.Room as List<EnrollmentSystem.Models.Room>;
-    var professors = ViewBag.Professor as List<EnrollmentSystem.Models.Professor>;
+Layout = "~/Views/Shared/_AdminHeader.cshtml";
+var academicYear = ViewBag.AcademicYears as List<EnrollmentSystem.Models.AcademicYear>;
+var programs = ViewBag.Programs as List<EnrollmentSystem.Models.Program>;
+var semester = ViewBag.Semester as List<EnrollmentSystem.Models.Semester>;
+var enrollment = ViewBag.CurrentEnrollement as EnrollmentSystem.Models.CurrentEnrollment;
+var rooms = ViewBag.Room as List<EnrollmentSystem.Models.Room>;
+var professors = ViewBag.Professor as List<EnrollmentSystem.Models.Professor>;
 }
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Control Panel</title>
-
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"  rel="stylesheet">
-
     <!-- Font Awesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"  rel="stylesheet">
-
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
         .card-header {
             cursor: pointer;
         }
-
         .card-header:hover {
             background-color: #f8f9fa;
         }
-
         .section-icon {
             margin-right: 10px;
         }
-
         .action-buttons .btn {
             margin-right: 5px;
         }
-
         .table-responsive {
             overflow-x: auto;
         }
-
         .badge-active {
             background-color: #28a745;
             color: white;
         }
-
         .badge-inactive {
             background-color: #6c757d;
             color: white;
@@ -54,7 +46,6 @@
     </style>
 </head>
 <body>
-
 <div class="container-fluid py-4">
     <div class="row mb-4">
         <div class="col">
@@ -99,9 +90,9 @@
                                 <option value="">-- Select Academic Year --</option>
                                 @foreach (var ay in academicYear)
                                 {
-                                    <option value="@ay.AyCode" selected="@(ay.AyCode == enrollment.ay_code)">
-                                        @ay.AyCode
-                                    </option>
+                                <option value="@ay.AyCode" selected="@(ay.AyCode == enrollment.ay_code)">
+                                    @ay.AyCode
+                                </option>
                                 }
                             </select>
                         </div>
@@ -111,9 +102,9 @@
                                 <option value="">-- Select Semester --</option>
                                 @foreach (var sem in semester)
                                 {
-                                    <option value="@sem.SemId" selected="@(sem.SemId == enrollment?.sem_id)">
-                                        @sem.SemName
-                                    </option>
+                                <option value="@sem.SemId" selected="@(sem.SemId == enrollment?.sem_id)">
+                                    @sem.SemName
+                                </option>
                                 }
                             </select>
                         </div>
@@ -126,7 +117,8 @@
                     </div>
                     <div class="mt-3">
                         <button id="btnEnroll" type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i>  Save Settings </button>
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
                     </div>
                 </div>
             </div>
@@ -152,33 +144,27 @@
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="thead-light">
-                            <tr>
-                                <th>Academic Year Code</th>
-                                <th>Start Year</th>
-                                <th>End Year</th>
-                                <th>Actions</th>
-                            </tr>
+                        <tr>
+                            <th>Academic Year Code</th>
+                            <th>Start Year</th>
+                            <th>End Year</th>
+                            <th>Actions</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            @foreach (var ay in academicYear)
-                            {
-                                <tr>
-                                    <td>@ay.AyCode</td>
-                                    <td>@ay.AyStartYear</td>
-                                    <td>@ay.AyEndYear</td>
-                                    <td class="action-buttons">
-                                        <button class="btn btn-sm btn-primary edit-ay"
-                                                data-id="@ay.AyCode"
-                                                data-start="@ay.AyStartYear"
-                                                data-end="@ay.AyEndYear">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <button class="btn btn-sm btn-danger delete-ay" data-id="@ay.AyCode">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
+                        @foreach (var ay in academicYear)
+                        {
+                        <tr>
+                            <td>@ay.AyCode</td>
+                            <td>@ay.AyStartYear</td>
+                            <td>@ay.AyEndYear</td>
+                            <td class="action-buttons">
+                                <button class="btn btn-sm btn-danger delete-ay" data-id="@ay.AyCode">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                        }
                         </tbody>
                     </table>
                 </div>
@@ -205,30 +191,30 @@
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="thead-light">
-                            <tr>
-                                <th>Program Code</th>
-                                <th>Program Title</th>
-                                <th>Actions</th>
-                            </tr>
+                        <tr>
+                            <th>Program Code</th>
+                            <th>Program Title</th>
+                            <th>Actions</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            @foreach (var prog in programs)
-                            {
-                                <tr>
-                                    <td>@prog.ProgCode</td>
-                                    <td>@prog.ProgTitle</td>
-                                    <td class="action-buttons">
-                                        <button class="btn btn-sm btn-primary edit-program"
-                                                data-id="@prog.ProgCode"
-                                                data-title="@prog.ProgTitle">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <button class="btn btn-sm btn-danger delete-program" data-id="@prog.ProgCode">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
+                        @foreach (var prog in programs)
+                        {
+                        <tr>
+                            <td>@prog.ProgCode</td>
+                            <td>@prog.ProgTitle</td>
+                            <td class="action-buttons">
+                                <button class="btn btn-sm btn-primary edit-program"
+                                        data-id="@prog.ProgCode"
+                                        data-title="@prog.ProgTitle">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-program" data-id="@prog.ProgCode">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                        }
                         </tbody>
                     </table>
                 </div>
@@ -255,33 +241,33 @@
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="thead-light">
-                            <tr>
-                                <th>Room ID</th>
-                                <th>Room Code</th>
-                                <th>Program Code</th>
-                                <th>Actions</th>
-                            </tr>
+                        <tr>
+                            <th>Room ID</th>
+                            <th>Room Code</th>
+                            <th>Program Code</th>
+                            <th>Actions</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            @foreach (var room in rooms)
-                            {
-                                <tr>
-                                    <td>@room.room_id</td>
-                                    <td>@room.room_code</td>
-                                    <td>@room.prog_code</td>
-                                    <td class="action-buttons">
-                                        <button class="btn btn-sm btn-primary edit-room"
-                                                data-id="@room.room_id"
-                                                data-code="@room.room_code"
-                                                data-prog="@room.prog_code">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <button class="btn btn-sm btn-danger delete-room" data-id="@room.room_id">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
+                        @foreach (var room in rooms)
+                        {
+                        <tr>
+                            <td>@room.room_id</td>
+                            <td>@room.room_code</td>
+                            <td>@room.prog_code</td>
+                            <td class="action-buttons">
+                                <button class="btn btn-sm btn-primary edit-room"
+                                        data-id="@room.room_id"
+                                        data-code="@room.room_code"
+                                        data-prog="@room.prog_code">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-room" data-id="@room.room_id">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                        }
                         </tbody>
                     </table>
                 </div>
@@ -308,33 +294,33 @@
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="thead-light">
-                            <tr>
-                                <th>Professor ID</th>
-                                <th>Professor Name</th>
-                                <th>Program Code</th>
-                                <th>Actions</th>
-                            </tr>
+                        <tr>
+                            <th>Professor ID</th>
+                            <th>Professor Name</th>
+                            <th>Program Code</th>
+                            <th>Actions</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            @foreach (var prof in professors)
-                            {
-                                <tr>
-                                    <td>@prof.prof_id</td>
-                                    <td>@prof.prof_name</td>
-                                    <td>@prof.prog_code</td>
-                                    <td class="action-buttons">
-                                        <button class="btn btn-sm btn-primary edit-professor"
-                                                data-id="@prof.prof_id"
-                                                data-name="@prof.prof_name"
-                                                data-prog="@prof.prog_code">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <button class="btn btn-sm btn-danger delete-professor" data-id="@prof.prof_id">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
+                        @foreach (var prof in professors)
+                        {
+                        <tr>
+                            <td>@prof.prof_id</td>
+                            <td>@prof.prof_name</td>
+                            <td>@prof.prog_code</td>
+                            <td class="action-buttons">
+                                <button class="btn btn-sm btn-primary edit-professor"
+                                        data-id="@prof.prof_id"
+                                        data-name="@prof.prof_name"
+                                        data-prog="@prof.prog_code">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-professor" data-id="@prof.prof_id">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                        }
                         </tbody>
                     </table>
                 </div>
@@ -344,30 +330,115 @@
 </div>
 
 <!-- Modals -->
+<!-- Add Academic Year Modal -->
+<div class="modal fade" id="addAcademicYearModal" tabindex="-1" aria-labelledby="addAcademicYearLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addAcademicYearLabel">Add Academic Year</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addAcademicYearForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="addAyStartYear">Start Year</label>
+                        <input type="number" class="form-control" id="addAyStartYear" name="StartYear" min="2000" max="2100" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="addAyEndYear">End Year</label>
+                        <input type="number" class="form-control" id="addAyEndYear" name="EndYear" min="2000" max="2100" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
-<!-- Edit Academic Year Modal -->
-<div class="modal fade" id="editAcademicYearModal" tabindex="-1" aria-labelledby="editAcademicYearLabel" aria-hidden="true">
+<!-- Add Program Modal -->
+<div class="modal fade" id="addProgramModal" tabindex="-1" aria-labelledby="addProgramLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addProgramLabel">Add Program</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addProgramForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="addProgCode">Program Code</label>
+                        <input type="text" class="form-control" id="addProgCode" name="ProgCode" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="addProgTitle">Program Title</label>
+                        <input type="text" class="form-control" id="addProgTitle" name="ProgTitle" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Program Modal -->
+<div class="modal fade" id="editProgramModal" tabindex="-1" aria-labelledby="editProgramLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="editAcademicYearLabel">Edit Academic Year</h5>
+                <h5 class="modal-title" id="editProgramLabel">Edit Program</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="@Url.Action("UpdateAcademicYear", "Admin")">
-                <input type="hidden" id="editAyId" name="AyCode" />
+            <form id="editProgramForm">
+                <input type="hidden" id="editProgId" name="ProgCode" />
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="editAyStartYear">Start Year</label>
-                        <input type="number" class="form-control" id="editAyStartYear" name="StartYear" min="2000" max="2100" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="editAyEndYear">End Year</label>
-                        <input type="number" class="form-control" id="editAyEndYear" name="EndYear" min="2000" max="2100" required />
+                        <label for="editProgTitle">Program Title</label>
+                        <input type="text" class="form-control" id="editProgTitle" name="ProgTitle" required />
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Room Modal -->
+<div class="modal fade" id="addRoomModal" tabindex="-1" aria-labelledby="addRoomLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addRoomLabel">Add Room</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addRoomForm">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="addRoomCode">Room Code</label>
+                        <input type="text" class="form-control" id="addRoomCode" name="RoomCode" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="addRoomProg">Program Code</label>
+                        <select class="form-select" id="addRoomProg" name="ProgCode" required>
+                            <option value="">-- Select Program --</option>
+                            @foreach (var prog in programs)
+                            {
+                            <option value="@prog.ProgCode">@prog.ProgCode - @prog.ProgTitle</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Add</button>
                 </div>
             </form>
         </div>
@@ -382,21 +453,61 @@
                 <h5 class="modal-title" id="editRoomLabel">Edit Room</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="@Url.Action("UpdateRoom", "Admin")">
+            <form id="editRoomForm">
                 <input type="hidden" id="editRoomId" name="RoomId" />
                 <div class="modal-body">
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="editRoomCode">Room Code</label>
                         <input type="text" class="form-control" id="editRoomCode" name="RoomCode" required />
                     </div>
                     <div class="form-group">
                         <label for="editRoomProg">Program Code</label>
-                        <input type="text" class="form-control" id="editRoomProg" name="ProgCode" required />
+                        <select class="form-select" id="editRoomProg" name="ProgCode" required>
+                            <option value="">-- Select Program --</option>
+                            @foreach (var prog in programs)
+                            {
+                            <option value="@prog.ProgCode">@prog.ProgCode - @prog.ProgTitle</option>
+                            }
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Room</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Professor Modal -->
+<div class="modal fade" id="addProfessorModal" tabindex="-1" aria-labelledby="addProfessorLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addProfessorLabel">Add Professor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addProfessorForm">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="addProfessorName">Professor Name</label>
+                        <input type="text" class="form-control" id="addProfessorName" name="ProfName" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="addProfessorProg">Program Code</label>
+                        <select class="form-select" id="addProfessorProg" name="ProgCode" required>
+                            <option value="">-- Select Program --</option>
+                            @foreach (var prog in programs)
+                            {
+                            <option value="@prog.ProgCode">@prog.ProgCode - @prog.ProgTitle</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Add</button>
                 </div>
             </form>
         </div>
@@ -411,21 +522,27 @@
                 <h5 class="modal-title" id="editProfessorLabel">Edit Professor</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="@Url.Action("UpdateProfessor", "Admin")">
+            <form id="editProfessorForm">
                 <input type="hidden" id="editProfessorId" name="ProfId" />
                 <div class="modal-body">
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="editProfessorName">Professor Name</label>
                         <input type="text" class="form-control" id="editProfessorName" name="ProfName" required />
                     </div>
                     <div class="form-group">
                         <label for="editProfessorProg">Program Code</label>
-                        <input type="text" class="form-control" id="editProfessorProg" name="ProgCode" required />
+                        <select class="form-select" id="editProfessorProg" name="ProgCode" required>
+                            <option value="">-- Select Program --</option>
+                            @foreach (var prog in programs)
+                            {
+                            <option value="@prog.ProgCode">@prog.ProgCode - @prog.ProgTitle</option>
+                            }
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Professor</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
                 </div>
             </form>
         </div>
@@ -445,44 +562,67 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteForm" method="post" action="">
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script> 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> 
-<script src="~/Scripts/MyScript/AdminControl.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Collapse Toggle Fix
-        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const target = this.getAttribute('data-bs-target');
-                new bootstrap.Collapse(document.querySelector(target)).toggle();
+    $(document).ready(function () {
+        // Save Current Enrollment Settings
+        $('#btnEnroll').click(function () {
+            var acadYear = $('#currentAy').val();
+            var sem = $('#currentSemester').val();
+            var isActive = $('#isActive').is(':checked');
+
+            $.ajax({
+                url: 'updateCurrentEnrollments',
+                method: 'POST',
+                data: {
+                    ay_code: acadYear,
+                    sem_id: sem,
+                    is_open: isActive
+                },
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire('Successfully updated!', '', 'success')
+                            .then(() => window.location.href = response.redirectUrl);
+                    } else {
+                        Swal.fire('Cannot update settings!', '', 'warning');
+                    }
+                },
+                error: function (xhr) {
+                    console.log(xhr);
+                }
             });
         });
 
-        // Edit Handlers
-        $('.edit-ay').click(function () {
+        // Use Event Delegation for Dynamic Buttons
+        $(document).on('click', '.edit-room', function () {
+            $('#editRoomId').val($(this).data('id'));
+            $('#editRoomCode').val($(this).data('code'));
+            $('#editRoomProg').val($(this).data('prog'));
+            $('#editRoomModal').modal('show');
+        });
+        $(document).on('click', '.edit-ay', function () {
             $('#editAyId').val($(this).data('id'));
             $('#editAyStartYear').val($(this).data('start'));
             $('#editAyEndYear').val($(this).data('end'));
             $('#editAcademicYearModal').modal('show');
         });
 
-        $('.edit-room').click(function () {
-            $('#editRoomId').val($(this).data('id'));
-            $('#editRoomCode').val($(this).data('code'));
-            $('#editRoomProg').val($(this).data('prog'));
-            $('#editRoomModal').modal('show');
+        $(document).on('click', '.edit-program', function () {
+            $('#editProgId').val($(this).data('id'));
+            $('#editProgTitle').val($(this).data('title'));
+            $('#editProgramModal').modal('show');
         });
-
-        $('.edit-professor').click(function () {
+        $(document).on('click', '.edit-professor', function () {
             $('#editProfessorId').val($(this).data('id'));
             $('#editProfessorName').val($(this).data('name'));
             $('#editProfessorProg').val($(this).data('prog'));
@@ -490,18 +630,120 @@
         });
 
         // Delete Handler
-        $('.delete-ay, .delete-room, .delete-professor').click(function () {
-            let type = '';
-            if ($(this).hasClass('delete-ay')) type = 'AcademicYear';
-            else if ($(this).hasClass('delete-room')) type = 'Room';
-            else if ($(this).hasClass('delete-professor')) type = 'Professor';
+        let deleteType = '';
+        let deleteId = '';
 
-            const id = $(this).data('id');
-            $('#deleteForm').attr('action', '@Url.Action("Delete", "Admin")?type=' + type + '&id=' + id);
+        $('.delete-ay, .delete-program, .delete-room, .delete-professor').click(function () {
+            if ($(this).hasClass('delete-ay')) deleteType = 'AcademicYear';
+            else if ($(this).hasClass('delete-program')) deleteType = 'Program';
+            else if ($(this).hasClass('delete-room')) deleteType = 'Room';
+            else if ($(this).hasClass('delete-professor')) deleteType = 'Professor';
+
+            deleteId = $(this).data('id');
             $('#deleteModal').modal('show');
+        });
+
+        $('#confirmDeleteBtn').click(function () {
+            $.ajax({
+                url: `/Admin/Delete?type=${deleteType}&id=${deleteId}`,
+                method: 'POST',
+                success: function (res) {
+                    if (res.success) {
+                        Swal.fire('Deleted!', '', 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error deleting!', '', 'error');
+                    }
+                }
+            });
+        });
+
+        // Add Handlers
+        $('#addAcademicYearForm').submit(function (e) {
+            e.preventDefault();
+            const formData = {
+                StartYear: $('#addAyStartYear').val(),
+                EndYear: $('#addAyEndYear').val()
+            };
+            $.post('/Admin/AddAcademicYear', formData, function (res) {
+                if (res.success) Swal.fire('Added!', '', 'success').then(() => location.reload());
+                else Swal.fire('Error adding!', '', 'error');
+            });
+        });
+
+        $('#addProgramForm').submit(function (e) {
+            e.preventDefault();
+            const formData = {
+                ProgCode: $('#addProgCode').val(),
+                ProgTitle: $('#addProgTitle').val()
+            };
+            $.post('/Admin/AddProgram', formData, function (res) {
+                if (res.success) Swal.fire('Added!', '', 'success').then(() => location.reload());
+                else Swal.fire('Error adding!', '', 'error');
+            });
+        });
+
+        $('#addRoomForm').submit(function (e) {
+            e.preventDefault();
+            const formData = {
+                RoomCode: $('#addRoomCode').val(),
+                ProgCode: $('#addRoomProg').val()
+            };
+            $.post('/Admin/AddRoom', formData, function (res) {
+                if (res.success) Swal.fire('Added!', '', 'success').then(() => location.reload());
+                else Swal.fire('Error adding!', '', 'error');
+            });
+        });
+
+        $('#addProfessorForm').submit(function (e) {
+            e.preventDefault();
+            const formData = {
+                ProfName: $('#addProfessorName').val(),
+                ProgCode: $('#addProfessorProg').val()
+            };
+            $.post('/Admin/AddProfessor', formData, function (res) {
+                if (res.success) Swal.fire('Added!', '', 'success').then(() => location.reload());
+                else Swal.fire('Error adding!', '', 'error');
+            });
+        });
+        
+        $('#editProgramForm').submit(function (e) {
+            e.preventDefault();
+            const formData = {
+                ProgCode: $('#editProgId').val(),
+                ProgTitle: $('#editProgTitle').val()
+            };
+            $.post('/Admin/UpdateProgram', formData, function (res) {
+                if (res.success) Swal.fire('Updated!', '', 'success').then(() => location.reload());
+                else Swal.fire('Error updating!', '', 'error');
+            });
+        });
+
+        $('#editRoomForm').submit(function (e) {
+            e.preventDefault();
+            const formData = {
+                RoomId: $('#editRoomId').val(),
+                RoomCode: $('#editRoomCode').val(),
+                ProgCode: $('#editRoomProg').val()
+            };
+            $.post('/Admin/UpdateRoom', formData, function (res) {
+                if (res.success) Swal.fire('Updated!', '', 'success').then(() => location.reload());
+                else Swal.fire('Error updating!', '', 'error');
+            });
+        });
+
+        $('#editProfessorForm').submit(function (e) {
+            e.preventDefault();
+            const formData = {
+                ProfId: $('#editProfessorId').val(),
+                ProfName: $('#editProfessorName').val(),
+                ProgCode: $('#editProfessorProg').val()
+            };
+            $.post('/Admin/UpdateProfessor', formData, function (res) {
+                if (res.success) Swal.fire('Updated!', '', 'success').then(() => location.reload());
+                else Swal.fire('Error updating!', '', 'error');
+            });
         });
     });
 </script>
-
 </body>
 </html>

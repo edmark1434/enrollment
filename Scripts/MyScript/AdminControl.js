@@ -15,14 +15,11 @@
           data : data,
           success: function(response){
               if(response.success){
-                  setTimeout(()=>{
-                      swal.fire({
-                          title: 'Successfully updated!',
-                          icon: 'success',
-                          confirmButtonText: 'OK'
-                      });
-                  },3000)
-                  window.location.href = response.redirectUrl;
+                  swal.fire({
+                      title: 'Successfully updated!',
+                      icon: 'success',
+                      confirmButtonText: 'OK'
+                  }).then(window.location.href = response.redirectUrl);
               }
                   swal.fire({
                       title: 'Cannot update settings!',

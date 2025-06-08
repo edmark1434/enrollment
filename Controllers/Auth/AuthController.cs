@@ -18,13 +18,6 @@ namespace EnrollmentSystem.Controllers.Auth
             _connectionString = ConfigurationManager.ConnectionStrings["Enrollment"].ConnectionString;
         }
         
-        [HttpGet]
-        [Route("Entry")]
-        public ActionResult Entry()
-        {
-            return View("~/Views/Auth/SignUp.cshtml");
-        }
-        
         [HttpPost]
         [Route("Entry")]
         public ActionResult Entry(Student student)
@@ -39,7 +32,8 @@ namespace EnrollmentSystem.Controllers.Auth
                     string.IsNullOrEmpty(student.Stud_Address) ||
                     string.IsNullOrEmpty(student.Stud_Contact) ||
                     string.IsNullOrEmpty(student.Stud_Email) ||
-                    string.IsNullOrEmpty(student.Stud_Password))
+                    string.IsNullOrEmpty(student.Stud_Password) ||
+                    string.IsNullOrEmpty(student.ProgCode)) 
                 {
                     return Json(new { mess = 0, error = "All required fields must be filled." }, JsonRequestBehavior.AllowGet);
                 }
@@ -78,8 +72,8 @@ namespace EnrollmentSystem.Controllers.Auth
                     // Insert student record
                     using (var cmd = new NpgsqlCommand(@"
                         INSERT INTO STUDENT 
-                        (STUD_CODE, STUD_LNAME, STUD_FNAME, STUD_MNAME, STUD_DOB, STUD_CONTACT, STUD_EMAIL, STUD_ADDRESS, STUD_PASSWORD)
-                        VALUES (@studCode, @lastName, @firstName, @middleName, @birthDate, @contactNo, @emailAddress, @address, @password)", db))
+                        (STUD_CODE, STUD_LNAME, STUD_FNAME, STUD_MNAME, STUD_DOB, STUD_CONTACT, STUD_EMAIL, STUD_ADDRESS, STUD_PASSWORD, PROG_CODE)
+                        VALUES (@studCode, @lastName, @firstName, @middleName, @birthDate, @contactNo, @emailAddress, @address, @password,@prog)", db))
                     {
                         cmd.Parameters.AddWithValue("@studCode", student.Stud_Code);
                         cmd.Parameters.AddWithValue("@lastName", student.Stud_Lname);
@@ -90,6 +84,7 @@ namespace EnrollmentSystem.Controllers.Auth
                         cmd.Parameters.AddWithValue("@emailAddress", student.Stud_Email);
                         cmd.Parameters.AddWithValue("@address", student.Stud_Address);
                         cmd.Parameters.AddWithValue("@password", hashedPassword);
+                        cmd.Parameters.AddWithValue("@prog", student.ProgCode);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
 

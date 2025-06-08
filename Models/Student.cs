@@ -35,13 +35,7 @@
         public DateTime Created_At { get; set; }
 
         public int Stud_Code { get; set; }
-
+        public string ProgCode {get;set;}
     }
-
-
-
-
-
-
 
 }

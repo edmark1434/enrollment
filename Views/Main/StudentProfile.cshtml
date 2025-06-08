@@ -1,5 +1,8 @@
+
 @{
     Layout = null; // Remove this if you're using a layout page
+    var student = ViewBag.Profile  as EnrollmentSystem.Models.Student;
+    var enrollment = ViewBag.Enrollment;
 }
 
 <!DOCTYPE html>
@@ -46,47 +49,34 @@
     <h1 class="mb-4">Your Student Profile</h1>
     <p class="lead">Here are your registered details.</p>
 
-    <div class="card mt-4">
-        <div class="card-header card-header-profile">
-            Student ID: CTU-2023-0001
-            @* <!-- With model: Student ID: @Model.StudentId --> *@
-        </div>
-        <div class="card-body profile-info">
-            <p><strong>Name:</strong> Juan Dela Cruz | Santos</p>
-            @* <!-- With model: <p><strong>Name:</strong> @Model.FirstName @Model.LastName | @Model.MiddleName</p> --> *@
-
-            <p><strong>Year:</strong> 1st Year</p>
-            @* <!-- With model: <p><strong>Year:</strong> @Model.YearLevel</p> --> *@
-
-            <p><strong>Semester:</strong> 2nd Semester</p>
-            @* <!-- With model: <p><strong>Semester:</strong> @Model.CurrentSemester</p> --> *@
-
-            <p><strong>Student Status:</strong> Regular</p>
-            @* <!-- With model: <p><strong>Student Status:</strong> @Model.StudentStatus</p> --> *@
-
-            <p><strong>Current Course:</strong> Bachelor of Science in Information Technology</p>
-            @* <!-- With model: <p><strong>Current Course:</strong> @Model.Course</p> --> *@
-
-            <hr>
-            <p><strong>Date of Birth:</strong> January 15, 2005 | <strong>Age:</strong> 20</p>
-            @* <!-- With model: <p><strong>Date of Birth:</strong> @Model.DateOfBirth.ToString("MMMM dd, yyyy") | <strong>Age:</strong> @Model.Age</p> --> *@
-
-            <p><strong>Contact Number:</strong> +63 9XX XXX XXXX</p>
-            @* <!-- With model: <p><strong>Contact Number:</strong> @Model.ContactNumber</p> --> *@
-
-            <p><strong>Email Address:</strong> juan.delacruz@ctu.edu.ph</p>
-            @* <!-- With model: <p><strong>Email Address:</strong> @Model.Email</p> --> *@
-
-            <hr>
-            <p><strong>Address:</strong> 123 Main Street, Cebu City, Philippines</p>
-            @* <!-- With model: <p><strong>Address:</strong> @Model.Address</p> --> *@
-
-            <hr>
-            <p><strong>Date Registered:</strong> August 20, 2023</p>
-            @* <!-- With model: <p><strong>Date Registered:</strong> @Model.DateRegistered.ToString("MMMM dd, yyyy")</p> --> *@
-        </div>
+    <div class="card-header card-header-profile">
+        Student ID: CTU-@student.Stud_Code.ToString("D4")
     </div>
-</div>
+    <div class="card-body profile-info">
+        <p><strong>Name:</strong> @{
+                                      string formattedName = !string.IsNullOrEmpty(student.Stud_Mname)
+                                          ? $"{student.Stud_Fname} {student.Stud_Mname[0]}. {student.Stud_Lname}"
+                                          : $"{student.Stud_Fname} {student.Stud_Lname}";
+                                  } @formattedName</p>
+
+        <p><strong>Current Course:</strong> @student.ProgCode</p>
+
+        <hr>
+        <p><strong>Date of Birth:</strong> @student.Stud_Dob.ToString("MMMM dd, yyyy") | 
+            <strong>Age:</strong> @(DateTime.Now.Year - student.Stud_Dob.Year - 
+                                  (DateTime.Now.DayOfYear < student.Stud_Dob.DayOfYear ? 1 : 0))</p>
+
+        <p><strong>Contact Number:</strong> @student.Stud_Contact</p>
+
+        <p><strong>Email Address:</strong> @student.Stud_Email</p>
+
+        <hr>
+        <p><strong>Address:</strong> @student.Stud_Address</p>
+
+        <hr>
+    </div>
+
+    </div>
 
 <script src="@Url.Content("~/Scripts/bootstrap.bundle.min.js")"></script>
 <script>

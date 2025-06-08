@@ -2,6 +2,17 @@ $(document).ready(function () {
     $('#btn').click(function () {
         $('.input-error').removeClass('input-error');
         
+        var newPass = $('#newPassword').val();
+        var confirmPass = $('#confirmPass').val();
+        if(newPass !== confirmPass) {
+            Swal.fire({
+                title: 'Warning',
+                text: "Passwords don't match!",
+                icon: 'warning',
+                confirmButtonText: 'Try Again'
+            });
+            return;
+        }
         var studCode = parseInt($('#studCode').val(), 10);
         
         if (isNaN(studCode)) {
@@ -18,7 +29,7 @@ $(document).ready(function () {
             Stud_Email: $('#emailAddress').val(),
             Stud_Address: $('#address').val(),
             Stud_Password: $('#newPassword').val(),
-            
+            ProgCode : $("#program").val()
         };
         console.log(student);
         $.ajax({

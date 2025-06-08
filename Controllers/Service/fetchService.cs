@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Web.Mvc;
+using System.Web.UI.WebControls;
 using EnrollmentSystem.Models;
+using Microsoft.Ajax.Utilities;
 using Npgsql;
 
 namespace EnrollmentSystem.Controllers.Service
@@ -85,7 +87,7 @@ namespace EnrollmentSystem.Controllers.Service
             var sections = new List<BlkSec>();
 
             using (var conn = new NpgsqlConnection(_connectionString))
-            using (var cmd = new NpgsqlCommand("SELECT blk_sec_id, prog_code, blk_sec_code FROM blk_sec", conn))
+            using (var cmd = new NpgsqlCommand("SELECT blk_sec_id, prog_code, blk_sec_name FROM block_section", conn))
             {
                 conn.Open();
                 using (var reader = cmd.ExecuteReader())
@@ -284,9 +286,292 @@ namespace EnrollmentSystem.Controllers.Service
             }
             return professor;
         }
+
+        public List<BlkSec> GetSectionByProgram(string program, string yr_level)
+        {
+            var sections = new List<BlkSec>();
+            using (var conn = new NpgsqlConnection(_connectionString))
+            {
+                conn.Open();
+
+                string command;
+                using (var cmd = new NpgsqlCommand())
+                {
+                    cmd.Connection = conn;
+
+                    if (string.IsNullOrEmpty(yr_level))
+                    {
+                        // Only filter by program
+                        command = "SELECT * FROM block_section WHERE prog_code = @program";
+                        cmd.CommandText = command;
+                        cmd.Parameters.AddWithValue("@program", program);
+                    }
+                    else
+                    {
+                        // Filter by program and year level
+                        command = "SELECT * FROM block_section WHERE prog_code = @program AND yr_level = @yr_level";
+                        cmd.CommandText = command;
+                        cmd.Parameters.AddWithValue("@program", program);
+                        cmd.Parameters.AddWithValue("@yr_level", yr_level);
+                    }
+
+                    var result = cmd.ExecuteReader();
+                    while (result.Read())
+                    {
+                        sections.Add(new BlkSec
+                        {
+                            BlkSecId = result.GetInt32(0),
+                            ProgCode = result.GetString(1),
+                            BlkSecCode = result.GetString(3)
+                        });
+                    }
+                }
+            }
+            return sections;
+        }
+        public List<Course> GetAllCourseByProgram(string program)
+        {
+            var Courses = new List<Course>();
+            var enrollment = GetCurrentEnrollments();
+            using (var conn = new NpgsqlConnection(_connectionString))
+            {
+                var cmd = new NpgsqlCommand(
+                    "SELECT C.crs_code, C.crs_title, C.crs_units, C.crs_lec, C.crs_lab, C.ctg_code, C.preq_id " +
+                    "FROM curriculum_course AS CC " +
+                    "INNER JOIN course AS C ON C.crs_code = CC.crs_code " +
+                    "WHERE CC.prog_code = @program AND cc.ay_code = @ay AND cc.cur_semester = @sem", conn);
+
+                cmd.Parameters.AddWithValue("@program", program);
+                cmd.Parameters.AddWithValue("@ay", enrollment.ay_code);
+                cmd.Parameters.AddWithValue("@sem", enrollment.sem_id);
+                conn.Open();
+
+                var result = cmd.ExecuteReader();
+                while (result.Read())
+                {
+                    Courses.Add(new Course
+                    {
+                        Crs_Code = result["crs_code"].ToString(),
+                        Crs_Title = result["crs_title"].ToString(),
+                        Crs_Units = result.GetDecimal(result.GetOrdinal("crs_units")),
+                        Crs_Lec = result.GetInt32(result.GetOrdinal("crs_lec")),
+                        Crs_Lab = result.GetInt32(result.GetOrdinal("crs_lab")),
+                        Ctg_Code = result["ctg_code"] != DBNull.Value ? result["ctg_code"].ToString() : null,
+                        Preq_Crs_Code = result["preq_id"] != DBNull.Value ? result["preq_id"].ToString() : null,
+                        Ctg_Name = null // Optional: set this later if needed via another join or service
+                    });
+                }
+            }
+
+            return Courses;
+        }
+
+        public List<Professor> GetAllProfessorsByProgram(string program)
+        {
+            var professors = new List<Professor>();
+            using (var conn = new NpgsqlConnection(_connectionString))
+            {
+                conn.Open();
+                var cmd = new NpgsqlCommand(
+                    "SELECT prof_id, prof_name, prog_code " +
+                    "FROM professor " +
+                    "WHERE prog_code = @program", conn);
+                cmd.Parameters.AddWithValue("@program", program);
+                var result = cmd.ExecuteReader();
+                while (result.Read())
+                {
+                    professors.Add(new Professor
+                    {
+                        prof_id = result.GetInt32(0),
+                        prof_name = result.GetString(1),
+                        prog_code = result.GetString(2)
+                    });
+                }
+            }
+            return professors;
+        }
+        public List<Room> GetAllRooms(string program)
+        {
+            var rooms = new List<Room>();
+            using (var conn = new NpgsqlConnection(_connectionString))
+            {
+                var cmd = new NpgsqlCommand("SELECT room_id, room_code, prog_code FROM room where prog_code = @program", conn);
+                conn.Open();
+                cmd.Parameters.AddWithValue("@program", program);
+                var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    rooms.Add(new Room
+                    {
+                        room_id = reader.GetInt32(reader.GetOrdinal("room_id")),
+                        room_code = reader["room_code"] != DBNull.Value ? reader["room_code"].ToString() : null,
+                        prog_code = reader["prog_code"] != DBNull.Value ? reader["prog_code"].ToString() : null
+                    });
+                }
+            }
+
+            return rooms;
+        }
+
+        public List<BlkSec> GetAllBlockSectionsByProgram(string program, string crs_code)
+        {
+            var sections = new List<BlkSec>();
+            using (var conn = new NpgsqlConnection(_connectionString))
+            {
+                conn.Open();
+
+                var cmd = new NpgsqlCommand(@"
+            SELECT DISTINCT b.blk_sec_id, b.blk_sec_name, b.prog_code
+            FROM curriculum_course AS cc
+            INNER JOIN block_section AS b 
+                ON b.prog_code = cc.prog_code AND b.yr_level = cc.cur_year_level
+            WHERE cc.prog_code = @program AND cc.crs_code = @crs_code", conn);
+
+                cmd.Parameters.AddWithValue("@program", program);
+                cmd.Parameters.AddWithValue("@crs_code", crs_code);
+
+                var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    sections.Add(new BlkSec
+                    {
+                        BlkSecId = reader.GetInt32(reader.GetOrdinal("blk_sec_id")),
+                        BlkSecCode = reader["blk_sec_name"].ToString(),
+                        ProgCode = reader["prog_code"].ToString()
+                    });
+                }
+            }
+
+            return sections;
+        }
+        public List<ScheduleViewModel> GetSchedulesBySection(int sectionId)
+        {
+            var result = new List<ScheduleViewModel>();
+
+            using (var conn = new NpgsqlConnection(_connectionString))
+            using (var cmd = new NpgsqlCommand(@"
+        SELECT 
+            s.mis_code,
+            s.crs_code,
+            c.crs_title AS course_name,
+            s.day,
+            s.start_time,
+            s.end_time,
+            r.room_code AS room,
+            p.prof_name AS professor,
+            b.blk_sec_name AS section,
+            (c.crs_lec + c.crs_lab) AS total_units
+        FROM schedule s
+        LEFT JOIN course c ON s.crs_code = c.crs_code
+        LEFT JOIN room r ON s.room_id = r.room_id
+        LEFT JOIN professor p ON s.prof_id = p.prof_id
+        LEFT JOIN block_section b ON s.blk_sec_id = b.blk_sec_id
+        WHERE s.blk_sec_id = @sectionId
+        ORDER BY s.day, s.start_time", conn))
+            {
+                cmd.Parameters.AddWithValue("sectionId", sectionId);
+                conn.Open();
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        result.Add(new ScheduleViewModel
+                        {
+                            MisCode = reader["mis_code"]?.ToString(),
+                            Course = reader["crs_code"]?.ToString(),
+                            CourseName = reader["course_name"]?.ToString(),
+                            Day = reader["day"]?.ToString(),
+                            StartTime = reader["start_time"]?.ToString(),
+                            EndTime = reader["end_time"]?.ToString(),
+                            Room = reader["room"]?.ToString(),
+                            Professor = reader["professor"]?.ToString(),
+                            Section = reader["section"]?.ToString(),
+                            Units = reader["total_units"] is int u ? u : 3
+                        });
+                    }
+                }
+            }
+
+            return result;
+        }
+        public List<ScheduleViewModel> GetAllSecondSemesterSchedules()
+        {
+            var schedules = new List<ScheduleViewModel>();
+
+            string query = @"
+                SELECT 
+                    s.mis_code,
+                    s.crs_code,
+                    c.crs_title AS course_name,
+                    s.day,
+                    s.start_time,
+                    s.end_time,
+                    r.room_code AS room,
+                    p.prof_name AS professor,
+                    b.blk_sec_name AS section,
+                    (c.crs_lec + c.crs_lab) as total_units
+                FROM schedule s
+                LEFT JOIN course c ON s.crs_code = c.crs_code
+                LEFT JOIN room r ON s.room_id = r.room_id
+                LEFT JOIN professor p ON s.prof_id = p.prof_id
+                LEFT JOIN block_section b ON s.blk_sec_id = b.blk_sec_id
+                WHERE EXISTS (
+                    SELECT 1 FROM curriculum_course cc
+                    WHERE cc.crs_code = s.crs_code AND cc.cur_semester = 2
+                )
+                ORDER BY s.day, s.start_time";
+
+            using (var conn = new NpgsqlConnection(_connectionString))
+            using (var cmd = new NpgsqlCommand(query, conn))
+            {
+                conn.Open();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        schedules.Add(new ScheduleViewModel
+                        {
+                            MisCode = reader["mis_code"]?.ToString(),
+                            Course = reader["crs_code"]?.ToString(),
+                            CourseName = reader["course_name"]?.ToString(),
+                            Day = reader["day"]?.ToString(),
+                            StartTime = reader["start_time"]?.ToString(),
+                            EndTime = reader["end_time"]?.ToString(),
+                            Room = reader["room"]?.ToString(),
+                            Professor = reader["professor"]?.ToString(),
+                            Section = reader["section"]?.ToString(),
+                            Units = reader["total_units"] is int u ? u : 3
+                        });
+                    }
+                }
+            }
+
+            return schedules;
+        }
         
+        
+
     }
-   
+    public class ScheduleViewModel
+    {
+        public int ScheduleId { get; set; }
+        public string MisCode { get; set; }
+        public string Course { get; set; }
+        public string Day { get; set; }
+        public string StartTime { get; set; }
+        public string EndTime { get; set; }
+
+        // Display fields
+        public string CourseName { get; set; }
+        public string Professor { get; set; }
+        public string Room { get; set; }
+        public string Section { get; set; }
+
+        // Unit info
+        public int Units { get; set; } = 3;
+    }
+
 
     public interface IFetchService
     {
@@ -300,5 +585,12 @@ namespace EnrollmentSystem.Controllers.Service
         CurrentEnrollment GetCurrentEnrollments();
         List<Room> GetRoomsFromDatabase();
         List<Professor> GetProfessorFromDatabase();
+        List<BlkSec> GetSectionByProgram(string program,string yr_level);
+        List<BlkSec> GetAllBlockSectionsByProgram(string program, string crs_code);
+        List<Course> GetAllCourseByProgram(string program);
+        List<Professor> GetAllProfessorsByProgram(string program);
+        List<Room> GetAllRooms(string program);
+        List<ScheduleViewModel> GetAllSecondSemesterSchedules();
+        List<ScheduleViewModel> GetSchedulesBySection(int sectionId);
     }
 }
