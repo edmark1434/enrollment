@@ -27,6 +27,7 @@
         public string Stud_Contact { get; set; }
 
         public string Stud_Email { get; set; }
+        public string Stud_Status { get; set; }
 
         public string Stud_Address { get; set; }
 

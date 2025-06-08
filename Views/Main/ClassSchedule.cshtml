@@ -1,6 +1,7 @@
 @{
 Layout = null;
 var prog = ViewBag.Program;
+var academicYear = ViewBag.AcademicYears as List<EnrollmentSystem.Models.AcademicYear>;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -73,6 +74,19 @@ var prog = ViewBag.Program;
                         <option value="" selected disabled>Choose Semester...</option>
                         <option value="1">1st Semester</option>
                         <option value="2">2nd Semester</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="currentAy" class="form-label">Academic Year</label>
+                    <select class="form-control" id="academicYearSelect" name="AcademicYear" required>
+                        <option value="">-- Select Academic Year --</option>
+                        @foreach (var ay in academicYear)
+                        {
+                            <option value="@ay.AyCode">
+                                @ay.AyCode
+                            </option>
+                        }
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -162,10 +176,16 @@ var prog = ViewBag.Program;
                 type: 'GET',
                 data: { year: selectedYear },
                 success: function (data) {
-                    scheduleTableBody.empty(); // Clear existing rows
+                    scheduleTableBody.empty();
 
-                    // 🚦 Client-side filtering by semester
-                    const filteredData = data.filter(item => item.Semester === selectedSemester);
+                    // Filter by selected semester
+                    let filteredData = data.filter(item => item.Semester === selectedSemester);
+
+                    // Then filter by academic year if selected
+                    const selectedAY = $("#academicYearSelect").val();
+                    if (selectedAY) {
+                        filteredData = filteredData.filter(item => item.AyCode === selectedAY);
+                    }
 
                     if (filteredData.length === 0) {
                         scheduleTableBody.append('<tr><td colspan="10" class="text-center">No records found.</td></tr>');
@@ -175,23 +195,23 @@ var prog = ViewBag.Program;
                             const endTime = convertTo12Hour(item.EndTime);
 
                             const row = `
-                            <tr>
-                                <td>${item.MisCode}</td>
-                                <td>${item.CourseCode}</td>
-                                <td>${item.Title}</td>
-                                <td>${item.Day}</td>
-                                <td>${startTime} - ${endTime}</td>
-                                <td>${item.Lec}</td>
-                                <td>${item.Lab}</td>
-                                <td>${item.Units}</td>
-                                <td>${item.Room}</td>
-                                <td>${item.Instructor}</td>
-                            </tr>`;
+                                <tr>
+                                    <td>${item.MisCode}</td>
+                                    <td>${item.CourseCode}</td>
+                                    <td>${item.Title}</td>
+                                    <td>${item.Day}</td>
+                                    <td>${startTime} - ${endTime}</td>
+                                    <td>${item.Lec}</td>
+                                    <td>${item.Lab}</td>
+                                    <td>${item.Units}</td>
+                                    <td>${item.Room}</td>
+                                    <td>${item.Instructor}</td>
+                                </tr>`;
                             scheduleTableBody.append(row);
                         });
                     }
 
-                    scheduleTermTitle.text(`${courseName} - ${selectedYear}, ${selectedSemester === 1 ? '1st Semester' : '2nd Semester'}`);
+                    scheduleTermTitle.text(`${courseName} - ${selectedYear}, ${selectedSemester === 1 ? '1st Semester' : '2nd Semester'} (${selectedAY})`);
                     scheduleDisplayArea.show();
                     calculateAndDisplayTotalUnits();
                 },

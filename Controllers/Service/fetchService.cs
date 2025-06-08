@@ -374,9 +374,7 @@ namespace EnrollmentSystem.Controllers.Service
                 conn.Open();
                 var cmd = new NpgsqlCommand(
                     "SELECT prof_id, prof_name, prog_code " +
-                    "FROM professor " +
-                    "WHERE prog_code = @program", conn);
-                cmd.Parameters.AddWithValue("@program", program);
+                    "FROM professor ", conn);
                 var result = cmd.ExecuteReader();
                 while (result.Read())
                 {
@@ -447,7 +445,7 @@ namespace EnrollmentSystem.Controllers.Service
         public List<ScheduleViewModel> GetSchedulesBySection(int sectionId)
         {
             var result = new List<ScheduleViewModel>();
-
+            var enrollment = GetCurrentEnrollments();
             using (var conn = new NpgsqlConnection(_connectionString))
             using (var cmd = new NpgsqlCommand(@"
         SELECT 
@@ -466,10 +464,13 @@ namespace EnrollmentSystem.Controllers.Service
         LEFT JOIN room r ON s.room_id = r.room_id
         LEFT JOIN professor p ON s.prof_id = p.prof_id
         LEFT JOIN block_section b ON s.blk_sec_id = b.blk_sec_id
-        WHERE s.blk_sec_id = @sectionId
+        LEFT JOIN curriculum_course cc ON cc.crs_code = s.crs_code                   
+        WHERE s.blk_sec_id = @sectionId AND cc.cur_semester = @sem AND cc.ay_code = @ay AND cc.prog_code = (SELECT prog_code from block_section where blk_sec_id = @sectionId)
         ORDER BY s.day, s.start_time", conn))
             {
                 cmd.Parameters.AddWithValue("sectionId", sectionId);
+                cmd.Parameters.AddWithValue("@sem", enrollment.sem_id);
+                cmd.Parameters.AddWithValue("@ay", enrollment.ay_code);
                 conn.Open();
 
                 using (var reader = cmd.ExecuteReader())
@@ -495,10 +496,10 @@ namespace EnrollmentSystem.Controllers.Service
 
             return result;
         }
-        public List<ScheduleViewModel> GetAllSecondSemesterSchedules()
+        public List<ScheduleViewModel> GetAllSecondSemesterSchedules(int stud_code)
         {
             var schedules = new List<ScheduleViewModel>();
-
+            var enrollment = GetCurrentEnrollments();
             string query = @"
                 SELECT 
                     s.mis_code,
@@ -513,19 +514,23 @@ namespace EnrollmentSystem.Controllers.Service
                     (c.crs_lec + c.crs_lab) as total_units
                 FROM schedule s
                 LEFT JOIN course c ON s.crs_code = c.crs_code
+                LEFT JOIN curriculum_course cc ON s.crs_code = cc.crs_code    
                 LEFT JOIN room r ON s.room_id = r.room_id
                 LEFT JOIN professor p ON s.prof_id = p.prof_id
                 LEFT JOIN block_section b ON s.blk_sec_id = b.blk_sec_id
                 WHERE EXISTS (
                     SELECT 1 FROM curriculum_course cc
-                    WHERE cc.crs_code = s.crs_code AND cc.cur_semester = 2
-                )
+                    WHERE cc.crs_code = s.crs_code AND cc.cur_semester = @sem AND cc.ay_code = @ay AND cc.prog_code = (SELECT prog_code from block_section where blk_sec_id = s.blk_sec_id)
+                ) AND cc.prog_code = (SELECT prog_code from student where stud_code = @stud_code)
                 ORDER BY s.day, s.start_time";
 
             using (var conn = new NpgsqlConnection(_connectionString))
             using (var cmd = new NpgsqlCommand(query, conn))
             {
                 conn.Open();
+                cmd.Parameters.AddWithValue("@sem", enrollment.sem_id);
+                cmd.Parameters.AddWithValue("@ay", enrollment.ay_code);
+                cmd.Parameters.AddWithValue("@stud_code", stud_code);
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -590,7 +595,7 @@ namespace EnrollmentSystem.Controllers.Service
         List<Course> GetAllCourseByProgram(string program);
         List<Professor> GetAllProfessorsByProgram(string program);
         List<Room> GetAllRooms(string program);
-        List<ScheduleViewModel> GetAllSecondSemesterSchedules();
+        List<ScheduleViewModel> GetAllSecondSemesterSchedules(int stud_code);
         List<ScheduleViewModel> GetSchedulesBySection(int sectionId);
     }
 }

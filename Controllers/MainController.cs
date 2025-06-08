@@ -58,6 +58,7 @@ namespace EnrollmentSystem.Controllers
                         student.Stud_Dob = Convert.ToDateTime(reader["stud_dob"]);
                         student.Stud_Contact = reader["stud_contact"]?.ToString();
                         student.Stud_Email = reader["stud_email"]?.ToString();
+                        student.Stud_Status = reader["stud_status"]?.ToString();
                         student.Stud_Address = reader["stud_address"]?.ToString();
                         student.Stud_Code = Convert.ToInt32(reader["stud_code"]);
                         student.ProgCode = reader["prog_code"]?.ToString();
@@ -120,6 +121,7 @@ namespace EnrollmentSystem.Controllers
                                 student.Stud_Dob = Convert.ToDateTime(reader["stud_dob"]);
                                 student.Stud_Contact = reader["stud_contact"]?.ToString();
                                 student.Stud_Email = reader["stud_email"]?.ToString();
+                                student.Stud_Status = reader["stud_status"]?.ToString();
                                 student.Stud_Address = reader["stud_address"]?.ToString();
                                 student.Stud_Code = Convert.ToInt32(reader["stud_code"]);
                                 student.ProgCode = reader["prog_code"].ToString();
@@ -181,6 +183,7 @@ namespace EnrollmentSystem.Controllers
                 }
             }
             ViewBag.Program = program;
+            ViewBag.AcademicYears = _fetchService.GetAcademicYearsFromDatabase();
             return View("~/Views/Main/ClassSchedule.cshtml");
         }
         [HttpPost]
@@ -191,28 +194,89 @@ namespace EnrollmentSystem.Controllers
                 using (var conn = new NpgsqlConnection(connString))
                 {
                     conn.Open();
+
                     foreach (var enr in enrollments)
                     {
+                        // Step 1: Get the prerequisite for this course
+                        string prereqQuery = "SELECT preq_id FROM course WHERE crs_code = @crs_code";
+                        using (var prereqCmd = new NpgsqlCommand(prereqQuery, conn))
+                        {
+                            prereqCmd.Parameters.AddWithValue("crs_code", enr.crs_code);
+                            var result = prereqCmd.ExecuteScalar();
+
+                            string prerequisiteRaw = "";
+
+                            // Step 2: Check if the result is not NULL or empty or "None"
+                            if (result != null && !string.IsNullOrEmpty(result.ToString()))
+                            {
+                                prerequisiteRaw = result.ToString().Trim();
+
+                                // Skip further checks if it's "None" or equivalent
+                                if (prerequisiteRaw.Equals("None", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    goto InsertEnrollment; // Skip validation
+                                }
+
+                                // Handle multiple prerequisites separated by commas
+                                string[] prerequisites = prerequisiteRaw
+                                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(p => p.Trim())
+                                    .ToArray();
+
+                                foreach (var prereqCode in prerequisites)
+                                {
+                                    // Step 3: Check if student passed this prerequisite
+                                    string checkEnrollmentQuery = @"
+                                        SELECT COUNT(1) 
+                                        FROM enrollment 
+                                        WHERE stud_code = @stud_code 
+                                          AND crs_code = @prereq_code 
+                                          AND enrol_status = 'Approved'
+                                          AND enrol_evaluation = 'Passed'";
+
+                                    using (var checkCmd = new NpgsqlCommand(checkEnrollmentQuery, conn))
+                                    {
+                                        checkCmd.Parameters.AddWithValue("stud_code", enr.stud_code);
+                                        checkCmd.Parameters.AddWithValue("prereq_code", prereqCode);
+
+                                        int passedCount = Convert.ToInt32(checkCmd.ExecuteScalar());
+
+                                        if (passedCount == 0)
+                                        {
+                                            return Json(new
+                                            {
+                                                success = false,
+                                                message = $"You cannot enroll in this course. Please complete {prereqCode} first."
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Step 4: Proceed with enrollment
+                        InsertEnrollment:
+
                         using (var cmd = new NpgsqlCommand(@"
-                    INSERT INTO enrollment (
-                        mis_code, 
-                        crs_code, 
-                        ay_code, 
-                        enrol_sem, 
-                        stud_code, 
-                        enrol_status, 
-                        enrol_yr_level, 
-                        enrol_date
-                    ) VALUES (
-                        @mis_code, 
-                        @crs_code, 
-                        @ay_code, 
-                        @enrol_sem, 
-                        @stud_code, 
-                        @enrol_status, 
-                        @enrol_yr_level, 
-                        @enrol_date
-                    )", conn))
+                            INSERT INTO enrollment (
+                                mis_code, 
+                                crs_code, 
+                                ay_code, 
+                                enrol_sem, 
+                                stud_code, 
+                                enrol_status, 
+                                enrol_yr_level, 
+                                enrol_date
+                            ) VALUES (
+                                @mis_code, 
+                                @crs_code, 
+                                @ay_code, 
+                                @enrol_sem, 
+                                @stud_code, 
+                                @enrol_status, 
+                                @enrol_yr_level, 
+                                @enrol_date
+                            )", conn))
                         {
                             cmd.Parameters.AddWithValue("mis_code", enr.mis_code);
                             cmd.Parameters.AddWithValue("crs_code", enr.crs_code);
@@ -278,7 +342,8 @@ namespace EnrollmentSystem.Controllers
                         c.crs_lab,
                         c.crs_units,
                         r.room_code,
-                        p.prof_name
+                        p.prof_name,
+                        e.ay_code
                     FROM enrollment AS e
                     INNER JOIN schedule AS s ON e.mis_code = s.mis_code
                     INNER JOIN room AS r ON r.room_id = s.room_id    
@@ -308,7 +373,8 @@ namespace EnrollmentSystem.Controllers
                             Lab = reader["crs_lab"].ToString(),
                             Units = reader["crs_units"].ToString(),
                             Room = reader["room_code"].ToString(),
-                            Instructor = reader["prof_name"].ToString()
+                            Instructor = reader["prof_name"].ToString(),
+                            AyCode = reader["ay_code"].ToString(),
                         });
                     }
                 }
@@ -329,7 +395,8 @@ namespace EnrollmentSystem.Controllers
                     Lab = g.First().Lab,
                     Units = g.First().Units,
                     Room = g.First().Room,
-                    Instructor = g.First().Instructor
+                    Instructor = g.First().Instructor,
+                    AyCode = g.First().AyCode
                 })
                 .ToList();
 
@@ -357,5 +424,6 @@ namespace EnrollmentSystem.Controllers
         public string Room { get; set; }
         public string Instructor { get; set; }
         public int Semester { get; set; }
+        public string AyCode { get; set; }
     }
 }

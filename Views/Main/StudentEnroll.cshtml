@@ -69,9 +69,9 @@
                     <div class="col-md-3">
                         <label class="form-label">Student Status</label>
                         <select class="form-select form-control" name="studentStatus">
-                            <option selected disabled>Choose...</option>
-                            <option value="Regular">Regular</option>
-                            <option value="Irregular">Irregular</option>
+                            <option disabled @(Model.Stud_Status == null ? "selected" : "")>Choose...</option>
+                            <option value="Regular" @(Model.Stud_Status == "Regular" ? "selected" : "")>Regular</option>
+                            <option value="Irregular" @(Model.Stud_Status == "Irregular" ? "selected" : "")>Irregular</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -141,11 +141,12 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
 
 <script>
+    let numberOfSchedules = 0;
     const scheduleTableBody = $('#scheduleTableBody');
     const selectedSubjectsTableBody = $('#selectedSubjectsTableBody');
     const totalUnitsDisplay = $('#totalUnitsDisplay');
     const selectedCourseCodesInput = $('#selectedCourseCodesInput');
-    
+    let selectedCourses = [];
     $('#btn').click(function (e) {
         e.preventDefault(); // Prevent default form submission
 
@@ -162,7 +163,18 @@
             Swal.fire("No Subjects Selected", "Please select at least one subject.", "warning");
             return;
         }
-
+        var value = $('select[name="studentStatus"]').val();
+        if (value === 'Regular') {
+            const requiredMisCodes = $('#scheduleTableBody tr').map(function () {
+                return $(this).data('id');
+            }).get();
+            const selectedMisCodes = selectedCourses.map(c => c.misCode);
+            const missing = requiredMisCodes.filter(code => !selectedMisCodes.includes(code));
+            if (missing.length > 0) {
+                Swal.fire("Incomplete Enrollment", "You must enroll in all subjects listed for your block section.", "warning");
+                return;
+            }
+        }
         // Confirm with user before submitting
         Swal.fire({
             title: 'Confirm Enrollment',
@@ -205,9 +217,9 @@
                 $.post("/Main/SaveEnrollments", { enrollments: enrollmentData }, function (response) {
                     if (response.success) {
                         Swal.fire("Success", "Subjects enrolled successfully!", "success")
-                            .then(() => window.location.reload());
+                            .then(() => window.location.href = '/Main/Home');
                     } else {
-                        Swal.fire("Error", response.message || "Failed to save enrollment.", "error");
+                        Swal.fire("Warning", response.message || "Failed to save enrollment.", "Warning");
                     }
                 }).fail(function () {
                     Swal.fire("Error", "Server error. Please try again.", "error");
@@ -424,6 +436,7 @@
         if (status === 'Regular' && sectionId) {
             $.get(`/fetch/GetSchedulesBySection?sectionId=${sectionId}`, function (response) {
                 displaySchedule(response.schedules || []);
+                numberOfSchedules = response.schedules.length;
                 updateSelectedSubjectsTable();
             }).fail(() => {
                 Swal.fire("Error", "Failed to load regular schedule.", "error");

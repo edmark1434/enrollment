@@ -124,7 +124,7 @@ var program = ViewBag.Program as List<EnrollmentSystem.Models.Program>;
 
 <!-- Modal for Schedule -->
 <div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="scheduleModalLabel">Student Schedule</h5>
@@ -141,6 +141,7 @@ var program = ViewBag.Program as List<EnrollmentSystem.Models.Program>;
                         <th>ROOM</th>
                         <th>PROFESSOR</th>
                         <th>SECTION</th>
+                        <th>Evaluation</th>
                     </tr>
                     </thead>
                     <tbody></tbody>
@@ -275,6 +276,7 @@ var program = ViewBag.Program as List<EnrollmentSystem.Models.Program>;
                         room: s.room_code,
                         professor: s.prof_name,
                         section: s.section_code || "-",
+                        evaluation : s.evaluation,
                         days: [],
                         times: []
                     };
@@ -283,8 +285,7 @@ var program = ViewBag.Program as List<EnrollmentSystem.Models.Program>;
                 grouped[key].days.push(s.day);
                 grouped[key].times.push(`${s.start_time} - ${s.end_time}`);
             });
-    
-            // Render rows
+
             Object.values(grouped).forEach(course => {
                 const uniqueDays = [...new Set(course.days)].join(", ");
                 const timeSlots = [...new Set(course.times)].map(t => {
@@ -292,16 +293,26 @@ var program = ViewBag.Program as List<EnrollmentSystem.Models.Program>;
                     return `${convertTo12Hour(start)} - ${convertTo12Hour(end)}`;
                 }).join(" / ");
 
-                $container.append(`
-                <tr>
-                    <td>${course.misCode}</td>
-                    <td>${course.courseName} (${course.courseCode})</td>
-                    <td>${uniqueDays}</td>
-                    <td>${timeSlots}</td>
-                    <td>${course.room}</td>
-                    <td>${course.professor}</td>
-                    <td>${course.section}</td>
-                </tr>
+                        const evaluationDropdown = `
+                       <select class="form-select form-select-sm evaluation-select" data-miscode="${course.misCode}" data-studcode="${studCode}">
+                            <option value="Pending" ${course.evaluation === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Passed" ${course.evaluation === 'Passed' ? 'selected' : ''}>Passed</option>
+                            <option value="Failed" ${course.evaluation === 'Failed' ? 'selected' : ''}>Failed</option>
+                        </select>
+                        `;
+        
+                        $container.append(`
+                        <tr>
+                            <td>${course.misCode}</td>
+                            <td>${course.courseName} (${course.courseCode})</td>
+                            <td>${uniqueDays}</td>
+                            <td>${timeSlots}</td>
+                            <td>${course.room}</td>
+                            <td>${course.professor}</td>
+                            <td>${course.section}</td>
+                            <!-- NEW CELL WITH EVALUATION SELECT -->
+                            <td>${evaluationDropdown}</td>
+                        </tr>
             `);
             });
 
@@ -343,7 +354,24 @@ var program = ViewBag.Program as List<EnrollmentSystem.Models.Program>;
     $('#filterProgram, #filterYearLevel, #filterSemester').on('change', function () {
         loadEnrollments();
     });
+    $(document).on('change', '.evaluation-select', function () {
+        const selectedValue = $(this).val();
+        const misCode = $(this).data("miscode");
+        const studCode = $(this).data("studcode");
 
+        // Example: Send to server via POST
+        $.post('/fetch/UpdateEvaluationStatus', {
+            StudCode: studCode,
+            MisCode: misCode,
+            Evaluation: selectedValue
+        }, function (response) {
+            if (response.success) {
+                Swal.fire("Success", "Evaluation status updated!", "success");
+            } else {
+                Swal.fire("Error", "Failed to update evaluation.", "error");
+            }
+        });
+    });
     // Load all enrollments on page ready
     $(document).ready(function () {
         loadEnrollments();

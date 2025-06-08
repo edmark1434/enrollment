@@ -102,8 +102,8 @@ public class fetchController : Controller
     [HttpGet]
     public JsonResult GetAllSecondSemesterSchedules()
     {
-        var schedules = _fetchService.GetAllSecondSemesterSchedules();
-
+        int studCode = int.Parse(Session["Stud_Code"].ToString());
+        var schedules = _fetchService.GetAllSecondSemesterSchedules(studCode);
         return Json(new { schedules }, JsonRequestBehavior.AllowGet);
     }
     [HttpGet]
@@ -186,6 +186,7 @@ public JsonResult GetAllEnrollments()
             c.crs_title AS course_name,
             r.room_code,
             p.prof_name,
+            e.enrol_evaluation, 
             s.day,
             TO_CHAR(s.start_time, 'HH24:MI') AS start_time,
             TO_CHAR(s.end_time, 'HH24:MI') AS end_time,
@@ -195,6 +196,7 @@ public JsonResult GetAllEnrollments()
         JOIN room r ON s.room_id = r.room_id
         JOIN professor p ON s.prof_id = p.prof_id
         JOIN block_section b ON s.blk_sec_id = b.blk_sec_id
+        JOIN enrollment e ON s.mis_code = e.mis_code AND stud_code = @studCode AND ay_code = @ay AND enrol_sem = @sem
         WHERE s.mis_code IN (
             SELECT mis_code FROM enrollment WHERE stud_code = @studCode AND ay_code = @ay AND enrol_sem = @sem
         )", conn))
@@ -217,7 +219,8 @@ public JsonResult GetAllEnrollments()
                         day = reader["day"]?.ToString(),
                         start_time = reader["start_time"]?.ToString(),
                         end_time = reader["end_time"]?.ToString(),
-                        section_code = reader["section_code"]?.ToString()
+                        section_code = reader["section_code"]?.ToString(),
+                        evaluation = reader["enrol_evaluation"]?.ToString(),
                     });
                 }
             }
@@ -279,7 +282,43 @@ public JsonResult GetAllEnrollments()
             }
             return null;
         }
-    
+        [HttpPost]
+        public JsonResult UpdateEvaluationStatus(string StudCode, string MisCode, string Evaluation)
+        {
+            var studCode = int.Parse(StudCode);
+            var enrollment = GetCurrentEnrollmentSeason();
+            try
+            {
+                using (var conn = new NpgsqlConnection(_connectionString))
+                {
+                    conn.Open();
+                    var cmd = new NpgsqlCommand(
+                        @"UPDATE enrollment SET enrol_evaluation = @eval 
+                  WHERE stud_code = @stud AND mis_code = @mis AND ay_code = @ay AND enrol_sem = @sem",
+                        conn);
+                    cmd.Parameters.AddWithValue("@eval", Evaluation);
+                    cmd.Parameters.AddWithValue("@stud", studCode);
+                    cmd.Parameters.AddWithValue("@mis", MisCode);
+                    cmd.Parameters.AddWithValue("@ay", enrollment.AyCode);
+                    cmd.Parameters.AddWithValue("@sem", enrollment.SemId);
+                    cmd.ExecuteNonQuery();
+                }
+
+                if (Evaluation == "Failed")
+                {
+                    var conn1 = new NpgsqlConnection(_connectionString);
+                    var cmd1 = new NpgsqlCommand(
+                        @"UPDATE STUDENT SET STUD_STATUS = 'Irregular' WHERE STUD_CODE = @stud", conn1);
+                        cmd1.Parameters.AddWithValue("@stud", studCode);
+                        cmd1.ExecuteNonQuery();
+                }
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
+        }
 
     public class EnrollmentSeasonViewModel
     {
