@@ -106,6 +106,26 @@ public class fetchController : Controller
         var schedules = _fetchService.GetAllSecondSemesterSchedules(studCode);
         return Json(new { schedules }, JsonRequestBehavior.AllowGet);
     }
+    [HttpPost]
+    public JsonResult DeleteSchedule(string MisCode)
+    {
+        try
+        {
+            using (var conn = new NpgsqlConnection(_connectionString))
+            {
+                conn.Open();
+                var cmd = new NpgsqlCommand("DELETE FROM schedule WHERE mis_code = @misCode", conn);
+                cmd.Parameters.AddWithValue("misCode", MisCode);
+                cmd.ExecuteNonQuery();
+            }
+
+            return Json(new { success = true, message = "Schedule deleted successfully." });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }   
     [HttpGet]
 public JsonResult GetAllEnrollments()
 {

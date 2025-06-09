@@ -233,6 +233,7 @@
                 <th>Room</th>
                 <th>Professor</th>
                 <th>Section</th>
+                <th>Actions</th>
             </tr>
             </thead>
             <tbody id="scheduleBody">
@@ -351,6 +352,33 @@
             console.error("Error fetching schedules:", xhr);
         });
     }
+
+    // Delete Schedule
+    $(document).on('click', '.delete-schedule', function () {
+        const row = $(this).closest('tr');
+        const misCode = row.data('id');
+
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post('/fetch/DeleteSchedule', { MisCode: misCode }, function (response) {
+                    if (response.success) {
+                        Swal.fire("Deleted!", response.message, "success");
+                        getAllSched(); 
+                    } else {
+                        Swal.fire("Error", response.message, "error");
+                    }
+                });
+            }
+        });
+    });
     $('#programFilter,#academicYearFilter').on('change', function () {
         var programFilter= $('#programFilter').val();
         var sectionFilter= $('#sectionFilter');
@@ -380,15 +408,15 @@
         const semesterFilter = $('#semesterFilter').val()?.toLowerCase();
 
         const filtered = allSchedules.filter(schedule => {
-            const matchesYear = !yearFilter || schedule.YearLevel?.toLowerCase().includes(yearFilter);
-            const matchesProgram = !programFilter || schedule.Program?.toLowerCase().includes(programFilter);
-            const matchesSection = !sectionFilter || schedule.SectionName?.toLowerCase().includes(sectionFilter);
+            const matchesYear = !yearFilter || schedule.YearLevel?.toLowerCase() === yearFilter;
+            const matchesProgram = !programFilter || schedule.Program?.toLowerCase() === programFilter;
+            const matchesSection = !sectionFilter || schedule.Section?.toLowerCase() === sectionFilter;
             const matchesSemester = !semesterFilter || schedule.Semester?.toString() === semesterFilter;
 
             return matchesYear && matchesProgram && matchesSection && matchesSemester;
         });
 
-        loadAndRenderSchedule(filtered); // Re-render table with filtered results
+        loadAndRenderSchedule(filtered);
     });
     const scheduleBody = $('#scheduleBody');
     let editingRow = null;
@@ -664,67 +692,76 @@
     });
 
     $('#resetFilterButton').on('click', function () {
-        $('#academicYearFilter, #programFilter, #sectionFilter, #semesterFilter').val('');
+        $('#programFilter, #academicYearFilter, #sectionFilter, #semesterFilter').val('');
         loadAndRenderSchedule(allSchedules);
-        $('#scheduleBody tr').show();
     });
     $('#filterButton').on('click', function () {
-        const year = $('#academicYearFilter').val().toLowerCase();
-        const program = $('#programFilter').val().toLowerCase();
-        const section = $('#sectionFilter').val().toLowerCase();
-        const semester = $('#semesterFilter').val().toLowerCase();
+        const yearFilter = $('#academicYearFilter').val()?.toLowerCase();
+        const programFilter = $('#programFilter').val()?.toLowerCase();
+        const sectionFilter = $('#sectionFilter').val()?.toLowerCase();
+        const semesterFilter = $('#semesterFilter').val()?.toLowerCase();
 
-        $('#scheduleBody tr').each(function () {
-            const $tr = $(this);
+        const filtered = allSchedules.filter(schedule => {
+            const matchesYear = !yearFilter || schedule.YearLevel?.toLowerCase() === yearFilter;
+            const matchesProgram = !programFilter || schedule.Program?.toLowerCase() === programFilter;
+            const matchesSection = !sectionFilter || schedule.SectionName?.toLowerCase() === sectionFilter;
+            const matchesSemester = !semesterFilter || schedule.Semester?.toString() === semesterFilter;
 
-            const courseCell = $tr.find("td:eq(1)");
-            const misCode = $tr.data("id");
-            const crsCode = courseCell.data("crs");
-            const days = JSON.parse(courseCell.data("days"));
-            const starts = JSON.parse(courseCell.data("starts"));
-            const ends = JSON.parse(courseCell.data("ends"));
-
-            // Get yr_level, prog_code, semester from each schedule entry (from test data or API)
-            const yrLevelMatch = !year || starts.some((_, i) => {
-                const yr = $(this).data("year")?.toString().toLowerCase() ?? "";
-                return !year || yr.includes(year);
-            });
-
-            const progMatch = !program || $(this).find("td:eq(1)").data("prog")?.toString().toLowerCase().includes(program);
-            const secMatch = !section || $(this).find("td:eq(6)").text().toLowerCase().includes(section);
-            const semMatch = !semester || $(this).find("td:eq(3)").text().toLowerCase().includes(semester);
-
-            $tr.toggle(yrLevelMatch && progMatch && secMatch && semMatch);
+            return matchesYear && matchesProgram && matchesSection && matchesSemester;
         });
+
+        loadAndRenderSchedule(filtered);
     });
+    function applyFilters(data) {
+        const selectedProg = $('#programFilter').val()?.toLowerCase();
+        const selectedYearLevel = $('#academicYearFilter').val()?.toLowerCase();
+        const selectedSection = $('#sectionFilter').val()?.toLowerCase();
+        const selectedSemester = $('#semesterFilter').val();
+
+        let filteredData = [...data]; // Make a copy
+
+        if (selectedProg) {
+            filteredData = filteredData.filter(e => e.Program?.toLowerCase() === selectedProg);
+        }
+
+        if (selectedYearLevel) {
+            filteredData = filteredData.filter(e => e.YearLevel?.toLowerCase() === selectedYearLevel);
+        }
+
+        if (selectedSection) {
+            filteredData = filteredData.filter(e => e.Section?.toLowerCase() === selectedSection);
+        }
+
+        if (selectedSemester && selectedSemester !== "") {
+            filteredData = filteredData.filter(e => e.Semester?.toString() === selectedSemester);
+        }
+
+        return filteredData;
+    }
     function loadAndRenderSchedule(data = []) {
         const grouped = groupSchedules(data);
-
         $('#scheduleBody').empty();
 
         grouped.forEach(schedule => {
-            const dayTimeDisplay = formatDayTime(schedule.scheduleDetails);
-            const days = schedule.scheduleDetails.map(d => d.day).join(", ");
-
+            const dayTimeDisplay = formatDayTime(schedule.scheduleDetails); // Format time/day
             const row = `
             <tr data-id="${schedule.MisCode}">
                 <td>${schedule.MisCode}</td>
                 <td data-crs="${schedule.Course}"
                     data-days='${JSON.stringify(schedule.scheduleDetails.map(d => d.day))}'
                     data-starts='${JSON.stringify(schedule.scheduleDetails.map(d => d.startTime))}'
-                    data-ends='${JSON.stringify(schedule.scheduleDetails.map(d => d.endTime))}'
-                    data-prog="${schedule.Program}"
-                    data-year="${schedule.YearLevel}"
-                    data-sem="${schedule.Semester}">
+                    data-ends='${JSON.stringify(schedule.scheduleDetails.map(d => d.endTime))}'>
                     ${schedule.courseName || schedule.Course}
                 </td>
-                <td>${days}</td>
+                <td>${schedule.scheduleDetails.map(d => d.day.charAt(0).toUpperCase() + d.day.slice(1)).join(", ")}</td>
                 <td>${dayTimeDisplay}</td>
                 <td>${schedule.Room || "-"}</td>
                 <td>${schedule.Professor || "-"}</td>
                 <td>${schedule.Section || "-"}</td>
-            </tr>
-        `;
+                <td>
+                    <button class="btn btn-sm btn-danger delete-schedule">Delete</button>
+                </td>
+            </tr>`;
 
             $('#scheduleBody').append(row);
         });
@@ -740,9 +777,9 @@
                 grouped[misCode] = {
                     MisCode: misCode,
                     Course: schedule.Course,
-                    courseName: schedule.courseName || schedule.Course,
-                    Room: schedule.RoomName,
-                    Professor: schedule.ProfessorName || schedule.ProfId,
+                    courseName: schedule.CourseName || schedule.Course,
+                    Room: schedule.RoomName || schedule.RoomId,
+                    Professor: schedule.ProfessorName || schedule.Professor,
                     Section: schedule.SectionName,
                     Program: schedule.Program,
                     YearLevel: schedule.YearLevel,
@@ -751,13 +788,11 @@
                 };
             }
 
-            if (schedule.Day && schedule.StartTime && schedule.EndTime) {
-                grouped[misCode].scheduleDetails.push({
-                    day: schedule.Day,
-                    startTime: schedule.StartTime,
-                    endTime: schedule.EndTime
-                });
-            }
+            grouped[misCode].scheduleDetails.push({
+                day: schedule.Day,
+                startTime: schedule.StartTime,
+                endTime: schedule.EndTime
+            });
         });
 
         return Object.values(grouped);
